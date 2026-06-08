@@ -1,0 +1,29 @@
+"use client";
+import { saveStockIn } from "@/actions/purchases";
+import { todayISO } from "@/lib/gst";
+import type { Product } from "@/lib/types";
+import { useRef } from "react";
+
+export default function StockInForm({ products }: { products: Product[] }) {
+  const ref = useRef<HTMLFormElement>(null);
+  return (
+    <form ref={ref} action={async (fd) => { await saveStockIn(fd); ref.current?.reset(); }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 12 }}>
+        <div><label className="fld">Product</label>
+          <select className="inp" name="product_id" required defaultValue="">
+            <option value="" disabled>Select product…</option>
+            {products.map((p) => <option key={p.id} value={p.id}>{p.name} (stock {p.stock})</option>)}
+          </select>
+        </div>
+        <div><label className="fld">Quantity</label><input className="inp" name="qty" type="number" step="any" required /></div>
+        <div><label className="fld">Cost / unit</label><input className="inp" name="cost" type="number" step="any" /></div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 12 }}>
+        <div><label className="fld">Date</label><input className="inp" name="date" type="date" defaultValue={todayISO()} /></div>
+        <div><label className="fld">Supplier</label><input className="inp" name="supplier" /></div>
+        <div><label className="fld">Note</label><input className="inp" name="note" /></div>
+      </div>
+      <button className="btn btn-green" type="submit" style={{ marginTop: 14 }}>Add Stock</button>
+    </form>
+  );
+}
