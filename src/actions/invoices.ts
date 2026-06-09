@@ -123,7 +123,7 @@ export async function updateInvoice(payload: NewSalePayload & { id: string }) {
   // existing invoice (for date + current payment state on credit edits)
   const { data: existing } = await supabase
     .from("invoices")
-    .select("date, paid, payments")
+    .select("date, paid, payments, pay_mode")
     .eq("id", payload.id)
     .single();
   if (!existing) throw new Error("Invoice not found");
@@ -160,12 +160,20 @@ export async function updateInvoice(payload: NewSalePayload & { id: string }) {
   const inter = customer ? isInterState(customer.state, shop.state) : false;
   const bill = computeBill(payload.items, inter, payload.noTax);
 
-  // keep payments on a credit edit; otherwise mark fully paid
+  // Payment handling on edit:
+  //  - Credit -> Credit: keep the payments already recorded (e.g. via Dues).
+  //  - (Cash/UPI/Card) -> Credit: it becomes an unpaid credit sale, so clear paid.
+  //  - any -> Cash/UPI/Card: mark fully paid for the new total.
   let paid: number;
   let payments: { date: string; amount: number; mode: string }[];
   if (payload.payMode === "Credit") {
-    paid = existing.paid ?? 0;
-    payments = existing.payments ?? [];
+    if (existing.pay_mode === "Credit") {
+      paid = existing.paid ?? 0;
+      payments = existing.payments ?? [];
+    } else {
+      paid = 0;
+      payments = [];
+    }
   } else {
     paid = bill.total;
     payments = [{ date: existing.date, amount: bill.total, mode: payload.payMode }];

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { computeBill, isInterState, money } from "@/lib/gst";
 import { createInvoice, updateInvoice } from "@/actions/invoices";
@@ -25,19 +25,43 @@ export default function BillingClient({ products, customers, shopState, edit }: 
   const [payMode, setPayMode] = useState(edit?.payMode ?? "Cash");
   const [noTax, setNoTax] = useState(edit?.noTax ?? false);
   const [q, setQ] = useState("");
+  const [hi, setHi] = useState(0); // highlighted row in the product list
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const cust = customers.find((c) => c.id === custId);
   const inter = cust ? isInterState(cust.state, shopState) : false;
   const bill = useMemo(() => computeBill(cart, inter, noTax), [cart, inter, noTax]);
 
+  const filtered = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || p.hsn.includes(q));
+
+  // keep highlight in range and scrolled into view
+  useEffect(() => { if (hi >= filtered.length) setHi(0); }, [filtered.length, hi]);
+  useEffect(() => {
+    listRef.current?.querySelector<HTMLElement>(`[data-idx="${hi}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [hi]);
+
   function addToCart(p: Product) {
+    if (p.stock <= 0) return;
     setCart((c) => {
       const ex = c.find((l) => l.productId === p.id);
       if (ex) return c.map((l) => (l.productId === p.id ? { ...l, qty: l.qty + 1 } : l));
       return [...c, { productId: p.id, name: p.name, hsn: p.hsn, price: p.price, gst: p.gst, qty: 1, disc: 0 }];
     });
+  }
+  function addAndReset(p: Product) {
+    addToCart(p);
+    setQ("");
+    setHi(0);
+    searchRef.current?.focus();
+  }
+  function onSearchKey(e: React.KeyboardEvent) {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHi((h) => Math.min(h + 1, filtered.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHi((h) => Math.max(h - 1, 0)); }
+    else if (e.key === "Enter") { e.preventDefault(); if (filtered[hi]) addAndReset(filtered[hi]); }
   }
   function setQty(id: string, qty: number) {
     setCart((c) => c.map((l) => (l.productId === id ? { ...l, qty: Math.max(0, qty) } : l)).filter((l) => l.qty > 0));
@@ -45,8 +69,6 @@ export default function BillingClient({ products, customers, shopState, edit }: 
   function setDisc(id: string, disc: number) {
     setCart((c) => c.map((l) => (l.productId === id ? { ...l, disc } : l)));
   }
-
-  const filtered = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || p.hsn.includes(q));
 
   async function save() {
     setErr("");
@@ -68,17 +90,47 @@ export default function BillingClient({ products, customers, shopState, edit }: 
     <div>
       <h2 style={{ fontSize: 23, fontWeight: 800, marginBottom: 16 }}>{edit ? `Edit Invoice ${edit.no}` : "Billing"}</h2>
       <div className="grid-2 bill">
-        {/* product picker */}
+        {/* product picker — keyboard-driven list */}
         <div className="card" style={{ padding: "16px 20px" }}>
-          <input className="inp" placeholder="Search products to add…" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 14 }} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 10, maxHeight: 460, overflow: "auto" }}>
-            {filtered.map((p) => (
-              <button key={p.id} onClick={() => addToCart(p)} disabled={p.stock <= 0} className="card" style={{ padding: 12, textAlign: "left", cursor: p.stock <= 0 ? "not-allowed" : "pointer", opacity: p.stock <= 0 ? 0.45 : 1, border: "1px solid var(--line)" }}>
-                <div style={{ fontWeight: 700, fontSize: 13 }}>{p.name}</div>
-                <div style={{ color: "var(--indigo)", fontWeight: 800, marginTop: 4 }}>{money(p.price)}</div>
-                <div style={{ fontSize: 11, color: p.stock <= p.low ? "var(--red)" : "var(--mut)" }}>Stock: {p.stock}</div>
-              </button>
-            ))}
+          <input
+            ref={searchRef}
+            className="inp"
+            autoFocus
+            placeholder="Search products — ↑↓ to move, Enter to add"
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setHi(0); }}
+            onKeyDown={onSearchKey}
+            style={{ marginBottom: 12 }}
+          />
+          <div ref={listRef} role="listbox" style={{ maxHeight: 460, overflow: "auto", border: "1px solid var(--line)", borderRadius: 12 }}>
+            {filtered.map((p, idx) => {
+              const out = p.stock <= 0;
+              const active = idx === hi;
+              return (
+                <button
+                  key={p.id}
+                  data-idx={idx}
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => addAndReset(p)}
+                  onMouseEnter={() => setHi(idx)}
+                  disabled={out}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                    padding: "10px 12px", border: "none", borderBottom: "1px solid #f1f2fb", cursor: out ? "not-allowed" : "pointer",
+                    textAlign: "left", opacity: out ? 0.45 : 1,
+                    background: active ? "linear-gradient(135deg,rgba(99,102,241,.14),rgba(139,92,246,.10))" : "transparent",
+                  }}
+                >
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ fontWeight: 700, fontSize: 13.5, display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
+                    <span style={{ fontSize: 11, color: p.stock <= p.low ? "var(--red)" : "var(--mut)" }}>HSN {p.hsn || "—"} · Stock {p.stock}</span>
+                  </span>
+                  <span style={{ color: "var(--indigo)", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap" }}>{money(p.price)}</span>
+                </button>
+              );
+            })}
+            {!filtered.length && <div style={{ padding: 16, color: "var(--mut)", fontSize: 13 }}>No products match.</div>}
           </div>
         </div>
 
