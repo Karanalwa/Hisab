@@ -2,17 +2,28 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { computeBill, isInterState, money } from "@/lib/gst";
-import { createInvoice } from "@/actions/invoices";
+import { createInvoice, updateInvoice } from "@/actions/invoices";
 import type { Product, Customer, InvoiceItem } from "@/lib/types";
 
-export default function BillingClient({ products, customers, shopState }: { products: Product[]; customers: Customer[]; shopState: string }) {
+export type EditInit = {
+  id: string;
+  no: string;
+  customerId: string;
+  walkInName: string;
+  walkInPhone: string;
+  items: InvoiceItem[];
+  payMode: string;
+  noTax: boolean;
+};
+
+export default function BillingClient({ products, customers, shopState, edit }: { products: Product[]; customers: Customer[]; shopState: string; edit?: EditInit }) {
   const router = useRouter();
-  const [cart, setCart] = useState<InvoiceItem[]>([]);
-  const [custId, setCustId] = useState("");
-  const [walkName, setWalkName] = useState("");
-  const [walkPhone, setWalkPhone] = useState("");
-  const [payMode, setPayMode] = useState("Cash");
-  const [noTax, setNoTax] = useState(false);
+  const [cart, setCart] = useState<InvoiceItem[]>(edit?.items ?? []);
+  const [custId, setCustId] = useState(edit?.customerId ?? "");
+  const [walkName, setWalkName] = useState(edit?.walkInName ?? "");
+  const [walkPhone, setWalkPhone] = useState(edit?.walkInPhone ?? "");
+  const [payMode, setPayMode] = useState(edit?.payMode ?? "Cash");
+  const [noTax, setNoTax] = useState(edit?.noTax ?? false);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -42,7 +53,10 @@ export default function BillingClient({ products, customers, shopState }: { prod
     if (!cart.length) { setErr("Cart is empty"); return; }
     setBusy(true);
     try {
-      const inv = await createInvoice({ customerId: custId || null, walkInName: walkName, walkInPhone: walkPhone, items: cart, payMode, noTax });
+      const args = { customerId: custId || null, walkInName: walkName, walkInPhone: walkPhone, items: cart, payMode, noTax };
+      const inv = edit
+        ? await updateInvoice({ id: edit.id, ...args })
+        : await createInvoice(args);
       router.push(`/invoices/${(inv as { id: string }).id}/print`);
     } catch (e) {
       setErr((e as Error).message);
@@ -52,7 +66,7 @@ export default function BillingClient({ products, customers, shopState }: { prod
 
   return (
     <div>
-      <h2 style={{ fontSize: 23, fontWeight: 800, marginBottom: 16 }}>Billing</h2>
+      <h2 style={{ fontSize: 23, fontWeight: 800, marginBottom: 16 }}>{edit ? `Edit Invoice ${edit.no}` : "Billing"}</h2>
       <div className="grid-2 bill">
         {/* product picker */}
         <div className="card" style={{ padding: "16px 20px" }}>
@@ -125,9 +139,11 @@ export default function BillingClient({ products, customers, shopState }: { prod
 
           {err && <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 8 }}>{err}</p>}
           <div style={{ display: "flex", gap: 10 }}>
-            <button className="btn" onClick={() => setCart([])} disabled={busy}>Clear</button>
+            <button className="btn" onClick={() => (edit ? router.push(`/invoices/${edit.id}/print`) : setCart([]))} disabled={busy}>
+              {edit ? "Cancel" : "Clear"}
+            </button>
             <button className="btn btn-primary" style={{ flex: 1, justifyContent: "center" }} onClick={save} disabled={busy}>
-              {busy ? "Saving…" : `Save & Print · ${money(bill.total)}`}
+              {busy ? "Saving…" : `${edit ? "Update" : "Save"} & View · ${money(bill.total)}`}
             </button>
           </div>
         </div>

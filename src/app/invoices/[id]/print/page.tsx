@@ -20,10 +20,10 @@ export default async function PrintInvoice({ params }: { params: Promise<{ id: s
 
   return (
     <div style={{ background: "#fff", minHeight: "100vh", padding: "24px 0" }}>
-      <PrintButton />
-      <div style={{ maxWidth: 800, margin: "0 auto", background: "#fff", padding: 36, border: "1px solid #eee" }}>
+      <PrintButton id={inv.id} />
+      <div className="inv-page">
         {/* header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "3px solid #6366f1", paddingBottom: 16, marginBottom: 18 }}>
+        <div className="inv-head">
           <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
             {shop.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -36,7 +36,7 @@ export default async function PrintInvoice({ params }: { params: Promise<{ id: s
               {shop.gstin && <div style={{ fontSize: 12, color: "#555" }}>GSTIN: {shop.gstin}</div>}
             </div>
           </div>
-          <div style={{ textAlign: "right" }}>
+          <div className="inv-head-right">
             <div style={{ fontSize: 20, fontWeight: 800, color: "#6366f1" }}>TAX INVOICE</div>
             <div style={{ fontSize: 13, marginTop: 6 }}><b>{inv.no}</b></div>
             <div style={{ fontSize: 12, color: "#555" }}>{fmtDate(inv.date)}</div>
@@ -53,7 +53,8 @@ export default async function PrintInvoice({ params }: { params: Promise<{ id: s
         </div>
 
         {/* items */}
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="inv-table-wrap">
+        <table className="inv-table" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={th}>#</th><th style={th}>Item</th><th style={th}>HSN</th>
@@ -79,9 +80,10 @@ export default async function PrintInvoice({ params }: { params: Promise<{ id: s
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* totals */}
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 18 }}>
+        <div className="inv-totals">
           <div style={{ maxWidth: 320 }}>
             <div style={{ fontSize: 11, color: "#888" }}>Amount in words</div>
             <div style={{ fontSize: 13, fontWeight: 600 }}>{numWords(inv.total)} Rupees Only</div>

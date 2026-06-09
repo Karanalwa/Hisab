@@ -37,8 +37,9 @@ export default async function InvoicesPage() {
                   <td className="r">{money(i.total)}</td>
                   <td className="r">{money(Math.max(0, (i.total || 0) - (i.paid || 0)))}</td>
                   <td><span className={pill(st)}>{st}</span></td>
-                  <td className="r">
-                    <Link href={`/invoices/${i.id}/print`} className="btn btn-sm">Print</Link>{" "}
+                  <td className="r" style={{ whiteSpace: "nowrap" }}>
+                    <Link href={`/invoices/${i.id}/print`} className="btn btn-sm">View</Link>{" "}
+                    <Link href={`/invoices/${i.id}/edit`} className="btn btn-sm">Edit</Link>{" "}
                     <form action={deleteInvoice} style={{ display: "inline" }}>
                       <input type="hidden" name="id" value={i.id} />
                       <button className="btn btn-sm btn-red" type="submit">Del</button>
