@@ -49,7 +49,7 @@ export default async function Dashboard() {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 18 }}>
+      <div className="grid-2">
         <div className="card" style={{ padding: "20px 22px" }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 14, display: "flex", justifyContent: "space-between" }}>
             <span>Recent Invoices</span>

@@ -53,7 +53,7 @@ export default function BillingClient({ products, customers, shopState }: { prod
   return (
     <div>
       <h2 style={{ fontSize: 23, fontWeight: 800, marginBottom: 16 }}>Billing</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 18 }}>
+      <div className="grid-2 bill">
         {/* product picker */}
         <div className="card" style={{ padding: "16px 20px" }}>
           <input className="inp" placeholder="Search products to add…" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 14 }} />
@@ -78,7 +78,7 @@ export default function BillingClient({ products, customers, shopState }: { prod
             </select>
           </div>
           {!custId && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <div className="row-2" style={{ marginBottom: 12 }}>
               <input className="inp" placeholder="Walk-in name (optional)" value={walkName} onChange={(e) => setWalkName(e.target.value)} />
               <input className="inp" placeholder="Phone (optional)" value={walkPhone} onChange={(e) => setWalkPhone(e.target.value)} />
             </div>

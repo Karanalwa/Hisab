@@ -10,7 +10,7 @@ export default async function SignupPage({
   const sp = await searchParams;
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "linear-gradient(185deg,#211e54,#312e81 60%,#3b2f7a)" }}>
-      <div className="card" style={{ width: 400, padding: 30 }}>
+      <div className="card" style={{ width: "100%", maxWidth: 400, padding: 30 }}>
         <div style={{ textAlign: "center", marginBottom: 18 }}>
           <div style={{ fontSize: 30 }}>⚡</div>
           <h1 style={{ fontSize: 22, fontWeight: 800 }}>Create your shop</h1>

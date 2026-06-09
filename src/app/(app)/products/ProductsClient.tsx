@@ -58,20 +58,20 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
       {open && (
         <div onClick={() => setOpen(false)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} className="card" style={modalBox}>
+          <div onClick={(e) => e.stopPropagation()} className="card modal-box" style={modalBox}>
             <h3 style={{ fontWeight: 800, marginBottom: 16 }}>{form.id ? "Edit" : "Add"} Product</h3>
             <form action={async (fd) => { await saveProduct(fd); setOpen(false); }}>
               <input type="hidden" name="id" value={form.id} />
               <Field label="Name" name="name" value={form.name} req />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="row-2">
                 <Field label="HSN code" name="hsn" value={form.hsn} />
                 <Field label="Unit" name="unit" value={form.unit} />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="row-2">
                 <Field label="Sale price" name="price" value={form.price} type="number" req />
                 <Field label="GST %" name="gst" value={form.gst} type="number" />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+              <div className="row-3">
                 <Field label="Stock" name="stock" value={form.stock} type="number" />
                 <Field label="Low at" name="low" value={form.low} type="number" />
                 <Field label="Cost" name="cost" value={form.cost} type="number" />

@@ -37,7 +37,7 @@ export default function DuesClient({ invoices }: { invoices: Invoice[] }) {
 
       {active && (
         <div onClick={() => setActive(null)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} className="card" style={modalBox}>
+          <div onClick={(e) => e.stopPropagation()} className="card modal-box" style={modalBox}>
             <h3 style={{ fontWeight: 800, marginBottom: 6 }}>Record Payment</h3>
             <p style={{ fontSize: 13, color: "var(--mut)", marginBottom: 14 }}>
               <b>{active.no}</b> — {active.customer_name}<br />
@@ -45,7 +45,7 @@ export default function DuesClient({ invoices }: { invoices: Invoice[] }) {
             </p>
             <form action={async (fd) => { await addPayment(fd); setActive(null); }}>
               <input type="hidden" name="invoice_id" value={active.id} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="row-2">
                 <div><label className="fld">Amount</label><input className="inp" name="amount" type="number" step="any" defaultValue={invoiceDue(active).toFixed(2)} required /></div>
                 <div><label className="fld">Mode</label>
                   <select className="inp" name="mode" defaultValue="Cash"><option>Cash</option><option>UPI</option><option>Card</option><option>Cheque</option></select>

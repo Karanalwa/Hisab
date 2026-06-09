@@ -63,7 +63,7 @@ export default async function ReportsPage({
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 18 }}>
+      <div className="grid-2 rev">
         <div className="card" style={{ padding: "16px 20px" }}>
           <h3 style={{ fontWeight: 800, marginBottom: 12 }}>By Payment Mode</h3>
           <table className="tbl">

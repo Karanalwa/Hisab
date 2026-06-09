@@ -16,11 +16,11 @@ export default async function SettingsPage() {
       <form action={saveSettings} className="card" style={{ padding: 24, maxWidth: 640 }}>
         <div style={{ marginBottom: 14 }}><label className="fld">Shop name</label><input className="inp" name="name" defaultValue={shop.name} required /></div>
         <div style={{ marginBottom: 14 }}><label className="fld">Address</label><input className="inp" name="address" defaultValue={shop.address} /></div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="row-2">
           <div style={{ marginBottom: 14 }}><label className="fld">PIN code</label><input className="inp" name="pin" defaultValue={shop.pin} /></div>
           <div style={{ marginBottom: 14 }}><label className="fld">Phone</label><input className="inp" name="phone" defaultValue={shop.phone} /></div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="row-2">
           <div style={{ marginBottom: 14 }}><label className="fld">GSTIN</label><input className="inp" name="gstin" defaultValue={shop.gstin} /></div>
           <div style={{ marginBottom: 14 }}>
             <label className="fld">State</label>
@@ -30,11 +30,11 @@ export default async function SettingsPage() {
             </select>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="row-2">
           <div style={{ marginBottom: 14 }}><label className="fld">Invoice prefix</label><input className="inp" name="invoice_prefix" defaultValue={shop.invoice_prefix} /></div>
           <div style={{ marginBottom: 14 }}><label className="fld">UPI ID</label><input className="inp" name="upi_id" defaultValue={shop.upi_id} /></div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="row-2">
           <div style={{ marginBottom: 14 }}>
             <label className="fld">Logo {shop.logo_url ? "(uploaded ✓)" : ""}</label>
             <input className="inp" name="logo" type="file" accept="image/*" />

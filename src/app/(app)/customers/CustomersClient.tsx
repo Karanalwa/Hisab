@@ -57,12 +57,12 @@ export default function CustomersClient({ customers, outstanding }: { customers:
 
       {open && (
         <div onClick={() => setOpen(false)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} className="card" style={modalBox}>
+          <div onClick={(e) => e.stopPropagation()} className="card modal-box" style={modalBox}>
             <h3 style={{ fontWeight: 800, marginBottom: 16 }}>{form.id ? "Edit" : "Add"} Customer</h3>
             <form action={async (fd) => { await saveCustomer(fd); setOpen(false); }}>
               <input type="hidden" name="id" value={form.id} />
               <div style={{ marginBottom: 12 }}><label className="fld">Name</label><input className="inp" name="name" defaultValue={form.name} required /></div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div className="row-2">
                 <div style={{ marginBottom: 12 }}><label className="fld">Phone</label><input className="inp" name="phone" defaultValue={form.phone} /></div>
                 <div style={{ marginBottom: 12 }}><label className="fld">GSTIN</label><input className="inp" name="gstin" defaultValue={form.gstin} /></div>
               </div>
