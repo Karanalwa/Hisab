@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { saveCustomer, deleteCustomer } from "@/actions/customers";
 import { money } from "@/lib/gst";
 import { INDIAN_STATES } from "@/lib/states";
@@ -44,7 +45,8 @@ export default function CustomersClient({ customers, outstanding }: { customers:
                 <td>{c.state}</td>
                 <td>{c.gstin}</td>
                 <td className="r" style={{ color: (outstanding[c.id] || 0) > 0 ? "var(--red)" : undefined, fontWeight: 700 }}>{money(outstanding[c.id] || 0)}</td>
-                <td className="r">
+                <td className="r" style={{ whiteSpace: "nowrap" }}>
+                  <Link href={`/customers/${c.id}/ledger`} className="btn btn-sm">Ledger</Link>{" "}
                   <button className="btn btn-sm" onClick={() => edit(c)}>Edit</button>{" "}
                   <form action={deleteCustomer} style={{ display: "inline" }}>
                     <input type="hidden" name="id" value={c.id} />

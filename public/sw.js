@@ -1,5 +1,5 @@
 // Hisab service worker — installable PWA + offline shell.
-const CACHE = "hisab-v1";
+const CACHE = "hisab-v2";
 const PRECACHE = ["/offline.html", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -23,9 +23,19 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // don't touch Supabase/3rd-party
 
-  // Page navigations: try network, fall back to a friendly offline page.
+  // Page navigations: network-first, but cache each successful page so it can
+  // be shown again offline. If offline and we've never cached this page, show
+  // the friendly offline screen.
   if (req.mode === "navigate") {
-    event.respondWith(fetch(req).catch(() => caches.match("/offline.html")));
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((hit) => hit || caches.match("/offline.html")))
+    );
     return;
   }
 
