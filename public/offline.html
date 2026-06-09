@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Offline — Hisab</title>
+<style>
+  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+       font-family:"Segoe UI",Roboto,system-ui,Arial,sans-serif;
+       background:linear-gradient(185deg,#211e54,#312e81 60%,#3b2f7a);color:#fff;text-align:center;padding:24px}
+  .box{max-width:340px}
+  .bolt{font-size:48px}
+  h1{font-size:22px;margin:12px 0 6px}
+  p{color:#b9bce4;font-size:14px;line-height:1.5}
+  button{margin-top:18px;padding:11px 20px;border:none;border-radius:12px;font-weight:700;font-size:14px;
+         background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#211e54;cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="bolt">⚡</div>
+    <h1>You're offline</h1>
+    <p>Hisab needs an internet connection to load your shop data. Please reconnect and try again.</p>
+    <button onclick="location.reload()">Retry</button>
+  </div>
+</body>
+</html>

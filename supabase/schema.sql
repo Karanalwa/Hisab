@@ -343,3 +343,25 @@ begin
 end $$;
 
 grant execute on function public.update_invoice(uuid,uuid,text,text,text,text,text,jsonb,boolean,boolean,numeric,numeric,numeric,numeric,numeric,numeric,text,numeric,jsonb) to authenticated;
+
+-- ============================================================
+--  RPC: public_invoice — read one invoice by UUID without login
+--  (for the shareable customer link). Returns only public fields.
+-- ============================================================
+create or replace function public.public_invoice(p_id uuid)
+returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'invoice', to_jsonb(i),
+    'shop', jsonb_build_object(
+      'name', s.name, 'address', s.address, 'pin', s.pin, 'gstin', s.gstin,
+      'state', s.state, 'phone', s.phone, 'logo_url', s.logo_url,
+      'upi_qr_url', s.upi_qr_url, 'upi_id', s.upi_id
+    )
+  )
+  from public.invoices i
+  join public.shops s on s.id = i.shop_id
+  where i.id = p_id
+$$;
+
+grant execute on function public.public_invoice(uuid) to anon, authenticated;
