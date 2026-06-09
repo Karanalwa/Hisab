@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { saveProduct, deleteProduct } from "@/actions/products";
 import { money } from "@/lib/gst";
+import { useHotkey, kbdHint } from "@/lib/hotkey";
 import type { Product } from "@/lib/types";
 
 const empty = { id: "", name: "", hsn: "", unit: "pcs", price: "", gst: "18", stock: "0", low: "5", cost: "" };
@@ -16,6 +17,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     setOpen(true);
   }
   function add() { setForm(empty); setOpen(true); }
+  useHotkey("a", add, !open);
 
   const filtered = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || p.hsn.includes(q));
 
@@ -26,7 +28,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
           <h2 style={{ fontSize: 23, fontWeight: 800 }}>Products &amp; Stock</h2>
           <p style={{ color: "var(--mut)", fontSize: 13 }}>{products.length} products</p>
         </div>
-        <button className="btn btn-primary" onClick={add}>+ Add Product</button>
+        <button className="btn btn-primary" onClick={add}>+ Add Product <kbd style={kbdHint}>A</kbd></button>
       </div>
 
       <div className="card" style={{ padding: "16px 20px" }}>
@@ -62,7 +64,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
             <h3 style={{ fontWeight: 800, marginBottom: 16 }}>{form.id ? "Edit" : "Add"} Product</h3>
             <form action={async (fd) => { await saveProduct(fd); setOpen(false); }}>
               <input type="hidden" name="id" value={form.id} />
-              <Field label="Name" name="name" value={form.name} req />
+              <Field label="Name" name="name" value={form.name} req autoFocus />
               <div className="row-2">
                 <Field label="HSN code" name="hsn" value={form.hsn} />
                 <Field label="Unit" name="unit" value={form.unit} />
@@ -88,11 +90,11 @@ export default function ProductsClient({ products }: { products: Product[] }) {
   );
 }
 
-function Field({ label, name, value, type = "text", req = false }: { label: string; name: string; value: string; type?: string; req?: boolean }) {
+function Field({ label, name, value, type = "text", req = false, autoFocus = false }: { label: string; name: string; value: string; type?: string; req?: boolean; autoFocus?: boolean }) {
   return (
     <div style={{ marginBottom: 12 }}>
       <label className="fld">{label}</label>
-      <input className="inp" name={name} type={type} defaultValue={value} required={req} step="any" />
+      <input className="inp" name={name} type={type} defaultValue={value} required={req} step="any" autoFocus={autoFocus} />
     </div>
   );
 }

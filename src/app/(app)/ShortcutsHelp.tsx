@@ -9,6 +9,7 @@ const GROUPS: { title: string; items: [string, string][] }[] = [
       ["/", "Focus the search box on the page"],
       ["m", "Open / close the menu"],
       ["n", "New invoice (Billing)"],
+      ["a", "Add new (product / customer / stock) on the current page"],
       ["Esc", "Close any dialog"],
     ],
   },

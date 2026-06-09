@@ -20,7 +20,7 @@ export default async function InvoicesPage() {
           <h2 style={{ fontSize: 23, fontWeight: 800 }}>Invoices</h2>
           <p style={{ color: "var(--mut)", fontSize: 13 }}>{invoices.length} invoices</p>
         </div>
-        <Link href="/billing" className="btn btn-primary">+ New Invoice</Link>
+        <Link href="/billing" className="btn btn-primary">+ New Invoice <kbd style={{ fontSize: 10, fontWeight: 800, background: "rgba(255,255,255,.25)", borderRadius: 5, padding: "1px 5px", marginLeft: 2 }}>N</kbd></Link>
       </div>
 
       <div className="card" style={{ padding: "16px 20px" }}>

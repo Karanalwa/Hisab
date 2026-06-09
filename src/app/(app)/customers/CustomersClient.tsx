@@ -3,6 +3,7 @@ import { useState } from "react";
 import { saveCustomer, deleteCustomer } from "@/actions/customers";
 import { money } from "@/lib/gst";
 import { INDIAN_STATES } from "@/lib/states";
+import { useHotkey, kbdHint } from "@/lib/hotkey";
 import type { Customer } from "@/lib/types";
 
 const empty = { id: "", name: "", phone: "", gstin: "", state: "", address: "" };
@@ -16,6 +17,8 @@ export default function CustomersClient({ customers, outstanding }: { customers:
     setForm({ id: c.id, name: c.name, phone: c.phone, gstin: c.gstin, state: c.state, address: c.address });
     setOpen(true);
   }
+  function add() { setForm(empty); setOpen(true); }
+  useHotkey("a", add, !open);
 
   const filtered = customers.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()) || (c.phone || "").includes(q));
 
@@ -26,7 +29,7 @@ export default function CustomersClient({ customers, outstanding }: { customers:
           <h2 style={{ fontSize: 23, fontWeight: 800 }}>Customers</h2>
           <p style={{ color: "var(--mut)", fontSize: 13 }}>{customers.length} customers</p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setForm(empty); setOpen(true); }}>+ Add Customer</button>
+        <button className="btn btn-primary" onClick={add}>+ Add Customer <kbd style={kbdHint}>A</kbd></button>
       </div>
 
       <div className="card" style={{ padding: "16px 20px" }}>
@@ -61,7 +64,7 @@ export default function CustomersClient({ customers, outstanding }: { customers:
             <h3 style={{ fontWeight: 800, marginBottom: 16 }}>{form.id ? "Edit" : "Add"} Customer</h3>
             <form action={async (fd) => { await saveCustomer(fd); setOpen(false); }}>
               <input type="hidden" name="id" value={form.id} />
-              <div style={{ marginBottom: 12 }}><label className="fld">Name</label><input className="inp" name="name" defaultValue={form.name} required /></div>
+              <div style={{ marginBottom: 12 }}><label className="fld">Name</label><input className="inp" name="name" defaultValue={form.name} required autoFocus /></div>
               <div className="row-2">
                 <div style={{ marginBottom: 12 }}><label className="fld">Phone</label><input className="inp" name="phone" defaultValue={form.phone} /></div>
                 <div style={{ marginBottom: 12 }}><label className="fld">GSTIN</label><input className="inp" name="gstin" defaultValue={form.gstin} /></div>
