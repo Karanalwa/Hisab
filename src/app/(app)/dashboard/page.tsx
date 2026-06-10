@@ -72,16 +72,16 @@ export default async function Dashboard() {
         <p style={{ color: "var(--mut)", fontSize: 13.5 }}>Welcome back to {shop?.name}</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 16, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 16, marginBottom: 24 }}>
         {stats.map((s) => (
           <div key={s.label} className="card card-hover" style={{ padding: 20, display: "flex", alignItems: "center", gap: 16 }}>
             <div style={{
               width: 52, height: 52, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 22, color: s.color, background: s.soft, flexShrink: 0
             }}>{s.icon}</div>
-            <div style={{ minWidth: 0 }}>
+            <div style={{ minWidth: 0, overflow: "hidden" }}>
               <div style={{ fontSize: 11.5, color: "var(--mut)", textTransform: "uppercase", letterSpacing: ".6px", fontWeight: 700 }}>{s.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4, letterSpacing: -0.3 }}>{s.value}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, marginTop: 4, letterSpacing: -0.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.value}</div>
             </div>
           </div>
         ))}
