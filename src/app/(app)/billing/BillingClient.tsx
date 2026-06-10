@@ -16,10 +16,10 @@ export type EditInit = {
   noTax: boolean;
 };
 
-export default function BillingClient({ products, customers, shopState, edit }: { products: Product[]; customers: Customer[]; shopState: string; edit?: EditInit }) {
+export default function BillingClient({ products, customers, shopState, edit, preselectCustomerId }: { products: Product[]; customers: Customer[]; shopState: string; edit?: EditInit; preselectCustomerId?: string }) {
   const router = useRouter();
   const [cart, setCart] = useState<InvoiceItem[]>(edit?.items ?? []);
-  const [custId, setCustId] = useState(edit?.customerId ?? "");
+  const [custId, setCustId] = useState(edit?.customerId ?? preselectCustomerId ?? "");
   const [walkName, setWalkName] = useState(edit?.walkInName ?? "");
   const [walkPhone, setWalkPhone] = useState(edit?.walkInPhone ?? "");
   const [payMode, setPayMode] = useState(edit?.payMode ?? "Cash");
@@ -31,16 +31,33 @@ export default function BillingClient({ products, customers, shopState, edit }: 
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  // customer search
+  const [custOpen, setCustOpen] = useState(false);
+  const [custQ, setCustQ] = useState("");
+  const custRef = useRef<HTMLDivElement>(null);
+
   const cust = customers.find((c) => c.id === custId);
   const inter = cust ? isInterState(cust.state, shopState) : false;
   const bill = useMemo(() => computeBill(cart, inter, noTax), [cart, inter, noTax]);
 
   const filtered = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || p.hsn.includes(q));
+  const filteredCustomers = customers.filter((c) =>
+    c.name.toLowerCase().includes(custQ.toLowerCase()) || (c.phone || "").includes(custQ)
+  );
 
   useEffect(() => { if (hi >= filtered.length) setHi(0); }, [filtered.length, hi]);
   useEffect(() => {
     listRef.current?.querySelector<HTMLElement>(`[data-idx="${hi}"]`)?.scrollIntoView({ block: "nearest" });
   }, [hi]);
+
+  // close customer dropdown on outside click
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (custRef.current && !custRef.current.contains(e.target as Node)) setCustOpen(false);
+    }
+    window.addEventListener("mousedown", onClick);
+    return () => window.removeEventListener("mousedown", onClick);
+  }, []);
 
   function addToCart(p: Product) {
     if (p.stock <= 0) return;
@@ -140,13 +157,57 @@ export default function BillingClient({ products, customers, shopState, edit }: 
 
         {/* cart + bill */}
         <div className="card" style={{ padding: "18px 22px", display: "flex", flexDirection: "column" }}>
-          <div style={{ marginBottom: 14 }}>
+          {/* searchable customer picker */}
+          <div style={{ marginBottom: 14 }} ref={custRef}>
             <label className="fld">Customer</label>
-            <select className="inp" value={custId} onChange={(e) => setCustId(e.target.value)}>
-              <option value="">Walk-in customer</option>
-              {customers.map((c) => <option key={c.id} value={c.id}>{c.name}{c.phone ? " · " + c.phone : ""}</option>)}
-            </select>
+            <div style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setCustOpen((o) => !o)}
+                className="inp"
+                style={{ textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+              >
+                <span>{cust ? `${cust.name}${cust.phone ? " · " + cust.phone : ""}` : "Walk-in customer"}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "var(--mut)", transition: "transform .15s", transform: custOpen ? "rotate(180deg)" : "none" }}><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              {custOpen && (
+                <div className="card" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 20, padding: 8, maxHeight: 300, overflow: "auto" }}>
+                  <input
+                    className="inp"
+                    placeholder="Search customers…"
+                    value={custQ}
+                    onChange={(e) => setCustQ(e.target.value)}
+                    style={{ marginBottom: 6, fontSize: 13 }}
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => { setCustId(""); setCustOpen(false); setCustQ(""); }}
+                    style={{
+                      width: "100%", textAlign: "left", padding: "9px 10px", borderRadius: 8, border: "none", background: !custId ? "var(--brand-soft)" : "transparent",
+                      cursor: "pointer", fontSize: 13.5, fontWeight: 600, color: "var(--txt)",
+                    }}
+                  >
+                    Walk-in customer
+                  </button>
+                  {filteredCustomers.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => { setCustId(c.id); setCustOpen(false); setCustQ(""); }}
+                      style={{
+                        width: "100%", textAlign: "left", padding: "9px 10px", borderRadius: 8, border: "none", background: custId === c.id ? "var(--brand-soft)" : "transparent",
+                        cursor: "pointer", fontSize: 13.5, color: "var(--txt)",
+                      }}
+                    >
+                      <span style={{ fontWeight: 600 }}>{c.name}</span>
+                      {c.phone && <span style={{ color: "var(--mut)", fontSize: 12, marginLeft: 6 }}>{c.phone}</span>}
+                    </button>
+                  ))}
+                  {!filteredCustomers.length && <div style={{ padding: 10, color: "var(--mut)", fontSize: 13 }}>No customers match.</div>}
+                </div>
+              )}
+            </div>
           </div>
+
           {!custId && (
             <div className="row-2" style={{ marginBottom: 14 }}>
               <input className="inp" placeholder="Walk-in name (optional)" value={walkName} onChange={(e) => setWalkName(e.target.value)} />

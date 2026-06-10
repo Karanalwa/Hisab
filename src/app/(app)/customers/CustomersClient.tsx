@@ -46,6 +46,7 @@ export default function CustomersClient({ customers, outstanding }: { customers:
                 <td style={{ color: "var(--mut)", fontSize: 12 }}>{c.gstin}</td>
                 <td className="r" style={{ color: (outstanding[c.id] || 0) > 0 ? "var(--red)" : "var(--green)", fontWeight: 700 }}>{money(outstanding[c.id] || 0)}</td>
                 <td className="r" style={{ whiteSpace: "nowrap" }}>
+                  <Link href={`/billing?customer=${c.id}`} className="btn btn-sm btn-green" style={{ textDecoration: "none" }}>Invoice</Link>{" "}
                   <Link href={`/customers/${c.id}/ledger`} className="btn btn-sm" style={{ textDecoration: "none" }}>Ledger</Link>{" "}
                   <button className="btn btn-sm" onClick={() => edit(c)}>Edit</button>{" "}
                   <form action={deleteCustomer} style={{ display: "inline" }}>
