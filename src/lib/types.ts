@@ -11,6 +11,8 @@ export type Shop = {
   logo_url: string | null;
   upi_qr_url: string | null;
   upi_id: string;
+  terms: string;
+  signature_url: string | null;
 };
 
 export type Product = {
@@ -37,7 +39,7 @@ export type Customer = {
 };
 
 export type InvoiceItem = {
-  productId: string;
+  productId?: string;
   name: string;
   hsn: string;
   price: number;

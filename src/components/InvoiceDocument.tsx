@@ -11,6 +11,8 @@ export type InvoiceShop = {
   logo_url: string | null;
   upi_qr_url: string | null;
   upi_id: string;
+  terms: string;
+  signature_url: string | null;
 };
 
 const th: React.CSSProperties = { textAlign: "left", padding: "9px 10px", borderBottom: "2px solid #0f172a", fontSize: 12, fontWeight: 700 };
@@ -134,10 +136,24 @@ export default function InvoiceDocument({ inv, shop, creditNotes = [] }: { inv: 
         </div>
       </div>
 
-      <div style={{ marginTop: 40, textAlign: "right", fontSize: 12.5, color: "#64748b" }}>
-        For {shop.name}<br /><br /><br />Authorised Signatory
+      <div className="inv-footer">
+        <div className="inv-footer-col">
+          {shop.terms && (
+            <>
+              <div className="inv-footer-heading">Terms & Conditions</div>
+              <div className="inv-footer-text" style={{ whiteSpace: "pre-line" }}>{shop.terms}</div>
+            </>
+          )}
+        </div>
+        <div className="inv-footer-col" style={{ textAlign: "right" }}>
+          {shop.signature_url && (
+            <img src={shop.signature_url} alt="Signature" style={{ height: 56, objectFit: "contain", marginBottom: 8 }} />
+          )}
+          <div style={{ fontSize: 12.5 }}>For {shop.name}</div>
+          <div style={{ fontSize: 11.5, opacity: 0.7 }}>Authorised Signatory</div>
+        </div>
       </div>
-      <div style={{ marginTop: 28, textAlign: "center", fontSize: 11.5, color: "#94a3b8" }}>Thank you for your business!</div>
+      <div style={{ marginTop: 28, textAlign: "center", fontSize: 11.5, color: "var(--mut)" }}>Thank you for your business!</div>
     </div>
   );
 }

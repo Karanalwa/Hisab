@@ -16,9 +16,20 @@ export type EditInit = {
   noTax: boolean;
 };
 
+type CartLine = InvoiceItem & { lineId: string };
+
+function uid() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function toCart(items: InvoiceItem[]): CartLine[] {
+  return items.map((it) => ({ ...it, lineId: it.productId || uid() }));
+}
+
 export default function BillingClient({ products, customers, shopState, edit, preselectCustomerId }: { products: Product[]; customers: Customer[]; shopState: string; edit?: EditInit; preselectCustomerId?: string }) {
   const router = useRouter();
-  const [cart, setCart] = useState<InvoiceItem[]>(edit?.items ?? []);
+  const [cart, setCart] = useState<CartLine[]>(toCart(edit?.items ?? []));
   const [custId, setCustId] = useState(edit?.customerId ?? preselectCustomerId ?? "");
   const [walkName, setWalkName] = useState(edit?.walkInName ?? "");
   const [walkPhone, setWalkPhone] = useState(edit?.walkInPhone ?? "");
@@ -30,6 +41,13 @@ export default function BillingClient({ products, customers, shopState, edit, pr
   const [err, setErr] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // custom item form
+  const [showCustom, setShowCustom] = useState(false);
+  const [cName, setCName] = useState("");
+  const [cPrice, setCPrice] = useState<string>("");
+  const [cGst, setCGst] = useState<string>("0");
+  const cNameRef = useRef<HTMLInputElement>(null);
 
   // customer search
   const [custOpen, setCustOpen] = useState(false);
@@ -59,18 +77,31 @@ export default function BillingClient({ products, customers, shopState, edit, pr
     return () => window.removeEventListener("mousedown", onClick);
   }, []);
 
-  function addToCart(p: Product) {
+  function addProduct(p: Product) {
     if (p.stock <= 0) return;
     setCart((c) => {
       const ex = c.find((l) => l.productId === p.id);
       if (ex) return c.map((l) => (l.productId === p.id ? { ...l, qty: l.qty + 1 } : l));
-      return [...c, { productId: p.id, name: p.name, hsn: p.hsn, price: p.price, gst: p.gst, qty: 1, disc: 0 }];
+      return [...c, { lineId: p.id, productId: p.id, name: p.name, hsn: p.hsn, price: p.price, gst: p.gst, qty: 1, disc: 0 }];
     });
   }
   function addAndReset(p: Product) {
-    addToCart(p);
+    addProduct(p);
     setQ("");
     setHi(0);
+    searchRef.current?.focus();
+  }
+  function addCustom(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    const price = parseFloat(cPrice || "0");
+    const gst = parseFloat(cGst || "0");
+    const name = cName.trim();
+    if (!name || price <= 0) return;
+    setCart((c) => [...c, { lineId: uid(), name, hsn: "", price, gst, qty: 1, disc: 0 }]);
+    setCName("");
+    setCPrice("");
+    setCGst("0");
+    setShowCustom(false);
     searchRef.current?.focus();
   }
   function onSearchKey(e: React.KeyboardEvent) {
@@ -79,11 +110,14 @@ export default function BillingClient({ products, customers, shopState, edit, pr
     else if (e.key === "ArrowUp") { e.preventDefault(); setHi((h) => Math.max(h - 1, 0)); }
     else if (e.key === "Enter") { e.preventDefault(); if (filtered[hi]) addAndReset(filtered[hi]); }
   }
-  function setQty(id: string, qty: number) {
-    setCart((c) => c.map((l) => (l.productId === id ? { ...l, qty: Math.max(0, qty) } : l)).filter((l) => l.qty > 0));
+  function updateLine(lineId: string, patch: Partial<CartLine>) {
+    setCart((c) => c.map((l) => (l.lineId === lineId ? { ...l, ...patch } : l)));
   }
-  function setDisc(id: string, disc: number) {
-    setCart((c) => c.map((l) => (l.productId === id ? { ...l, disc } : l)));
+  function setQty(lineId: string, qty: number) {
+    setCart((c) => c.map((l) => (l.lineId === lineId ? { ...l, qty: Math.max(0, qty) } : l)).filter((l) => l.qty > 0));
+  }
+  function removeLine(lineId: string) {
+    setCart((c) => c.filter((l) => l.lineId !== lineId));
   }
 
   async function save() {
@@ -91,7 +125,9 @@ export default function BillingClient({ products, customers, shopState, edit, pr
     if (!cart.length) { setErr("Cart is empty"); return; }
     setBusy(true);
     try {
-      const args = { customerId: custId || null, walkInName: walkName, walkInPhone: walkPhone, items: cart, payMode, noTax };
+      // strip lineId before sending
+      const items: InvoiceItem[] = cart.map(({ lineId: _lineId, ...it }) => it);
+      const args = { customerId: custId || null, walkInName: walkName, walkInPhone: walkPhone, items, payMode, noTax };
       const inv = edit
         ? await updateInvoice({ id: edit.id, ...args })
         : await createInvoice(args);
@@ -106,7 +142,7 @@ export default function BillingClient({ products, customers, shopState, edit, pr
     <div className="animate-fade-in">
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>{edit ? `Edit Invoice ${edit.no}` : "Billing"}</h2>
-        <p style={{ color: "var(--mut)", fontSize: 13.5 }}>{edit ? "Update invoice details and items" : "Search products and build your cart"}</p>
+        <p style={{ color: "var(--mut)", fontSize: 13.5 }}>{edit ? "Update invoice details and items" : "Search products or add a custom service item"}</p>
       </div>
 
       <div className="grid-2 bill">
@@ -122,7 +158,7 @@ export default function BillingClient({ products, customers, shopState, edit, pr
             onKeyDown={onSearchKey}
             style={{ marginBottom: 14 }}
           />
-          <div ref={listRef} role="listbox" style={{ maxHeight: 480, overflow: "auto", border: "1px solid var(--line)", borderRadius: 12, background: "#fff" }}>
+          <div ref={listRef} role="listbox" style={{ maxHeight: 360, overflow: "auto", border: "1px solid var(--line)", borderRadius: 12, background: "var(--panel)" }}>
             {filtered.map((p, idx) => {
               const out = p.stock <= 0;
               const active = idx === hi;
@@ -137,7 +173,7 @@ export default function BillingClient({ products, customers, shopState, edit, pr
                   disabled={out}
                   style={{
                     width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
-                    padding: "11px 14px", border: "none", borderBottom: "1px solid #f1f5f9", cursor: out ? "not-allowed" : "pointer",
+                    padding: "11px 14px", border: "none", borderBottom: "1px solid var(--line)", cursor: out ? "not-allowed" : "pointer",
                     textAlign: "left", opacity: out ? 0.4 : 1,
                     background: active ? "var(--brand-soft)" : "transparent",
                     transition: "background .1s",
@@ -152,6 +188,24 @@ export default function BillingClient({ products, customers, shopState, edit, pr
               );
             })}
             {!filtered.length && <div style={{ padding: 20, color: "var(--mut)", fontSize: 13 }}>No products match.</div>}
+          </div>
+
+          <div style={{ marginTop: 14 }}>
+            {!showCustom ? (
+              <button type="button" className="btn" onClick={() => { setShowCustom(true); setTimeout(() => cNameRef.current?.focus(), 0); }}>+ Add custom / service item</button>
+            ) : (
+              <form onSubmit={addCustom} className="card" style={{ padding: 14, border: "1px dashed var(--brand)", background: "var(--brand-soft)" }}>
+                <div className="row-2" style={{ marginBottom: 10 }}>
+                  <input ref={cNameRef} className="inp" placeholder="Item name" value={cName} onChange={(e) => setCName(e.target.value)} required />
+                  <input className="inp" type="number" min={0} step="0.01" placeholder="Price" value={cPrice} onChange={(e) => setCPrice(e.target.value)} required />
+                  <input className="inp" type="number" min={0} step="0.01" placeholder="GST %" value={cGst} onChange={(e) => setCGst(e.target.value)} />
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button type="submit" className="btn btn-primary">Add item</button>
+                  <button type="button" className="btn" onClick={() => setShowCustom(false)}>Cancel</button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
 
@@ -217,22 +271,30 @@ export default function BillingClient({ products, customers, shopState, edit, pr
 
           <div style={{ flex: 1, overflow: "auto", maxHeight: 260, marginBottom: 14 }}>
             <table className="tbl">
-              <thead><tr><th>Item</th><th className="r">Qty</th><th className="r">Disc%</th><th className="r">Amt</th></tr></thead>
+              <thead><tr><th>Item</th><th className="r">Qty</th><th className="r">Price</th><th className="r">Disc%</th><th className="r">Amt</th></tr></thead>
               <tbody>
                 {cart.map((l) => {
                   const gross = l.qty * l.price;
                   const tax = gross * (1 - (l.disc || 0) / 100);
                   const amt = tax * (1 + (noTax ? 0 : l.gst) / 100);
+                  const isCustom = !l.productId;
                   return (
-                    <tr key={l.productId}>
-                      <td style={{ fontWeight: 600, fontSize: 12.5 }}>{l.name}</td>
-                      <td className="r"><input type="number" value={l.qty} onChange={(e) => setQty(l.productId, parseFloat(e.target.value) || 0)} style={{ width: 56, fontSize: 12.5, padding: "6px 8px" }} className="inp" /></td>
-                      <td className="r"><input type="number" value={l.disc || 0} onChange={(e) => setDisc(l.productId, parseFloat(e.target.value) || 0)} style={{ width: 56, fontSize: 12.5, padding: "6px 8px" }} className="inp" /></td>
+                    <tr key={l.lineId}>
+                      <td style={{ fontWeight: 600, fontSize: 12.5 }}>
+                        {isCustom ? (
+                          <input className="inp" value={l.name} onChange={(e) => updateLine(l.lineId, { name: e.target.value })} style={{ minWidth: 120, fontSize: 12.5, padding: "5px 8px" }} />
+                        ) : l.name}
+                      </td>
+                      <td className="r"><input type="number" value={l.qty} onChange={(e) => setQty(l.lineId, parseFloat(e.target.value) || 0)} style={{ width: 56, fontSize: 12.5, padding: "6px 8px" }} className="inp" /></td>
+                      <td className="r">
+                        <input type="number" value={l.price} onChange={(e) => updateLine(l.lineId, { price: parseFloat(e.target.value) || 0 })} style={{ width: 72, fontSize: 12.5, padding: "6px 8px" }} className="inp" />
+                      </td>
+                      <td className="r"><input type="number" value={l.disc || 0} onChange={(e) => updateLine(l.lineId, { disc: parseFloat(e.target.value) || 0 })} style={{ width: 56, fontSize: 12.5, padding: "6px 8px" }} className="inp" /></td>
                       <td className="r" style={{ fontWeight: 700 }}>{money(amt)}</td>
                     </tr>
                   );
                 })}
-                {!cart.length && <tr><td colSpan={4} style={{ color: "var(--mut)", padding: "16px 12px" }}>Tap a product to add it.</td></tr>}
+                {!cart.length && <tr><td colSpan={5} style={{ color: "var(--mut)", padding: "16px 12px" }}>Tap a product or add a custom item.</td></tr>}
               </tbody>
             </table>
           </div>

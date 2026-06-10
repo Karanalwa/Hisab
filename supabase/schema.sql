@@ -175,11 +175,13 @@ begin
     into v_prefix, v_no
     from public.shops where id = v_shop for update;
 
-  -- decrement stock for each line
+  -- decrement stock for each inventory line
   for it in select * from jsonb_array_elements(p_items) loop
-    update public.products
-      set stock = stock - coalesce((it->>'qty')::numeric, 0)
-      where id = (it->>'productId')::uuid and shop_id = v_shop;
+    if (it->>'productId') is not null and (it->>'productId') <> '' then
+      update public.products
+        set stock = stock - coalesce((it->>'qty')::numeric, 0)
+        where id = (it->>'productId')::uuid and shop_id = v_shop;
+    end if;
   end loop;
 
   insert into public.invoices (
@@ -319,15 +321,19 @@ begin
   if not found then raise exception 'Invoice not found'; end if;
 
   for old_it in select * from jsonb_array_elements(v_inv.items) loop
-    update public.products
-      set stock = stock + coalesce((old_it->>'qty')::numeric, 0)
-      where id = (old_it->>'productId')::uuid and shop_id = v_shop;
+    if (old_it->>'productId') is not null and (old_it->>'productId') <> '' then
+      update public.products
+        set stock = stock + coalesce((old_it->>'qty')::numeric, 0)
+        where id = (old_it->>'productId')::uuid and shop_id = v_shop;
+    end if;
   end loop;
 
   for it in select * from jsonb_array_elements(p_items) loop
-    update public.products
-      set stock = stock - coalesce((it->>'qty')::numeric, 0)
-      where id = (it->>'productId')::uuid and shop_id = v_shop;
+    if (it->>'productId') is not null and (it->>'productId') <> '' then
+      update public.products
+        set stock = stock - coalesce((it->>'qty')::numeric, 0)
+        where id = (it->>'productId')::uuid and shop_id = v_shop;
+    end if;
   end loop;
 
   update public.invoices set
@@ -356,7 +362,8 @@ language sql stable security definer set search_path = public as $$
     'shop', jsonb_build_object(
       'name', s.name, 'address', s.address, 'pin', s.pin, 'gstin', s.gstin,
       'state', s.state, 'phone', s.phone, 'logo_url', s.logo_url,
-      'upi_qr_url', s.upi_qr_url, 'upi_id', s.upi_id
+      'upi_qr_url', s.upi_qr_url, 'upi_id', s.upi_id,
+      'terms', coalesce(s.terms, ''), 'signature_url', s.signature_url
     )
   )
   from public.invoices i

@@ -4,8 +4,10 @@ import { createCreditNote } from "@/actions/creditNotes";
 import { money, todayISO } from "@/lib/gst";
 import type { Invoice, InvoiceItem } from "@/lib/types";
 
+type ReturnLine = InvoiceItem & { returnQty: number; maxQty: number };
+
 export default function CreditNoteModal({ invoice, onClose }: { invoice: Invoice; onClose: () => void }) {
-  const [items, setItems] = useState(
+  const [items, setItems] = useState<ReturnLine[]>(
     invoice.items.map((it) => ({ ...it, returnQty: 0, maxQty: it.qty }))
   );
   const [date, setDate] = useState(todayISO());
@@ -16,10 +18,10 @@ export default function CreditNoteModal({ invoice, onClose }: { invoice: Invoice
 
   const total = items.reduce((s, it) => s + it.returnQty * it.price * (1 + (invoice.no_tax ? 0 : it.gst) / 100), 0);
 
-  function setReturnQty(productId: string, qty: number) {
+  function setReturnQty(idx: number, qty: number) {
     setItems((prev) =>
-      prev.map((it) =>
-        it.productId === productId ? { ...it, returnQty: Math.max(0, Math.min(qty, it.maxQty)) } : it
+      prev.map((it, i) =>
+        i === idx ? { ...it, returnQty: Math.max(0, Math.min(qty, it.maxQty)) } : it
       )
     );
   }
@@ -60,10 +62,10 @@ export default function CreditNoteModal({ invoice, onClose }: { invoice: Invoice
           </div>
 
           <div style={{ maxHeight: 260, overflow: "auto", border: "1px solid var(--line)", borderRadius: 12, marginBottom: 14 }}>
-            {items.map((it) => {
+            {items.map((it, idx) => {
               const lineTotal = it.returnQty * it.price * (1 + (invoice.no_tax ? 0 : it.gst) / 100);
               return (
-                <div key={it.productId} style={{ padding: "10px 14px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 12 }}>
+                <div key={idx} style={{ padding: "10px 14px", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 13.5 }}>{it.name}</div>
                     <div style={{ fontSize: 11.5, color: "var(--mut)" }}>{money(it.price)} · Billed {it.qty} · GST {it.gst}%</div>
@@ -73,7 +75,7 @@ export default function CreditNoteModal({ invoice, onClose }: { invoice: Invoice
                     min={0}
                     max={it.maxQty}
                     value={it.returnQty}
-                    onChange={(e) => setReturnQty(it.productId, parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setReturnQty(idx, parseFloat(e.target.value) || 0)}
                     className="inp"
                     style={{ width: 64, textAlign: "center", padding: "6px 8px" }}
                   />

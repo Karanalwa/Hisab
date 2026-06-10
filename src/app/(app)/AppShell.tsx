@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/actions/auth";
 import { CommandPalette, type Command } from "./CommandPalette";
 import { ShortcutsHelp } from "./ShortcutsHelp";
+import ThemeToggle from "./_client/ThemeToggle";
 
 const NAV = [
   { href: "/dashboard", icon: "📊", label: "Dashboard", keys: "g d" },
@@ -161,6 +162,7 @@ export default function AppShell({
               <span>Search</span>
               <kbd style={{ fontSize: 11, fontWeight: 700, color: "var(--mut)", background: "#fff", border: "1px solid var(--line)", borderRadius: 5, padding: "1px 6px" }}>⌘K</kbd>
             </button>
+            <ThemeToggle />
             <form action={signOut}>
               <button className="btn btn-sm btn-ghost" type="submit">Sign out</button>
             </form>

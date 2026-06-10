@@ -39,18 +39,22 @@ begin
   select * into v_inv from public.invoices where id = p_id and shop_id = v_shop for update;
   if not found then raise exception 'Invoice not found'; end if;
 
-  -- put the old quantities back into stock
+  -- put the old quantities back into stock (skip service/non-inventory lines)
   for old_it in select * from jsonb_array_elements(v_inv.items) loop
-    update public.products
-      set stock = stock + coalesce((old_it->>'qty')::numeric, 0)
-      where id = (old_it->>'productId')::uuid and shop_id = v_shop;
+    if (old_it->>'productId') is not null and (old_it->>'productId') <> '' then
+      update public.products
+        set stock = stock + coalesce((old_it->>'qty')::numeric, 0)
+        where id = (old_it->>'productId')::uuid and shop_id = v_shop;
+    end if;
   end loop;
 
-  -- deduct the new quantities
+  -- deduct the new quantities (skip service/non-inventory lines)
   for it in select * from jsonb_array_elements(p_items) loop
-    update public.products
-      set stock = stock - coalesce((it->>'qty')::numeric, 0)
-      where id = (it->>'productId')::uuid and shop_id = v_shop;
+    if (it->>'productId') is not null and (it->>'productId') <> '' then
+      update public.products
+        set stock = stock - coalesce((it->>'qty')::numeric, 0)
+        where id = (it->>'productId')::uuid and shop_id = v_shop;
+    end if;
   end loop;
 
   update public.invoices set

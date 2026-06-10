@@ -91,11 +91,13 @@ begin
   select * into v_inv from public.invoices where id = p_invoice_id and shop_id = v_shop;
   if not found then raise exception 'Invoice not found'; end if;
 
-  -- restore stock for each returned item
+  -- restore stock for each returned inventory item (skip service/non-inventory lines)
   for it in select * from jsonb_array_elements(p_items) loop
-    update public.products
-      set stock = stock + coalesce((it->>'qty')::numeric, 0)
-      where id = (it->>'productId')::uuid and shop_id = v_shop;
+    if (it->>'productId') is not null and (it->>'productId') <> '' then
+      update public.products
+        set stock = stock + coalesce((it->>'qty')::numeric, 0)
+        where id = (it->>'productId')::uuid and shop_id = v_shop;
+    end if;
   end loop;
 
   -- generate credit note number
@@ -113,3 +115,7 @@ begin
 end $$;
 
 grant execute on function public.create_credit_note(uuid,date,jsonb,numeric,text,text) to authenticated;
+
+-- ---------- SHOP TERMS & SIGNATURE ----------
+alter table public.shops add column if not exists terms text default '';
+alter table public.shops add column if not exists signature_url text;

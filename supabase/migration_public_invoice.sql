@@ -13,7 +13,8 @@ language sql stable security definer set search_path = public as $$
     'shop', jsonb_build_object(
       'name', s.name, 'address', s.address, 'pin', s.pin, 'gstin', s.gstin,
       'state', s.state, 'phone', s.phone, 'logo_url', s.logo_url,
-      'upi_qr_url', s.upi_qr_url, 'upi_id', s.upi_id
+      'upi_qr_url', s.upi_qr_url, 'upi_id', s.upi_id,
+      'terms', coalesce(s.terms, ''), 'signature_url', s.signature_url
     )
   )
   from public.invoices i

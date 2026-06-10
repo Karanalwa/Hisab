@@ -20,7 +20,7 @@ export default async function PrintInvoice({ params }: { params: Promise<{ id: s
   const creditNotes = (cnData || []) as CreditNote[];
 
   return (
-    <div style={{ background: "#fff", minHeight: "100vh", padding: "24px 0" }}>
+    <div style={{ background: "var(--bg)", minHeight: "100vh", padding: "24px 0" }}>
       <PrintButton invoice={inv} />
       <InvoiceDocument inv={inv} shop={shop} creditNotes={creditNotes} />
     </div>

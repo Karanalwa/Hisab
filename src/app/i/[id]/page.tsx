@@ -16,10 +16,10 @@ export default async function PublicInvoice({ params }: { params: Promise<{ id: 
   if (!payload.invoice) notFound();
 
   return (
-    <div style={{ background: "#fff", minHeight: "100vh", padding: "24px 0" }}>
+    <div style={{ background: "var(--bg)", minHeight: "100vh", padding: "24px 0" }}>
       <PublicBar />
       <InvoiceDocument inv={payload.invoice} shop={payload.shop} />
-      <div style={{ textAlign: "center", fontSize: 11, color: "#aaa", marginTop: 20 }}>Powered by Hisab</div>
+      <div style={{ textAlign: "center", fontSize: 11, color: "var(--mut)", marginTop: 20 }}>Powered by Hisab</div>
     </div>
   );
 }

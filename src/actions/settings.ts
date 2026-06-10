@@ -18,11 +18,13 @@ export async function saveSettings(formData: FormData) {
     phone: String(formData.get("phone") || ""),
     invoice_prefix: String(formData.get("invoice_prefix") || "INV-"),
     upi_id: String(formData.get("upi_id") || ""),
+    terms: String(formData.get("terms") || ""),
   };
 
   // optional file uploads -> Supabase Storage (public bucket "shop-assets")
   const logo = formData.get("logo") as File | null;
   const qr = formData.get("upi_qr") as File | null;
+  const signature = formData.get("signature") as File | null;
 
   async function upload(file: File | null, key: string) {
     if (!file || file.size === 0) return null;
@@ -35,8 +37,10 @@ export async function saveSettings(formData: FormData) {
 
   const logoUrl = await upload(logo, "logo");
   const qrUrl = await upload(qr, "qr");
+  const signatureUrl = await upload(signature, "signature");
   if (logoUrl) update.logo_url = logoUrl;
   if (qrUrl) update.upi_qr_url = qrUrl;
+  if (signatureUrl) update.signature_url = signatureUrl;
 
   await supabase.from("shops").update(update).eq("id", shop.id);
   revalidatePath("/settings");

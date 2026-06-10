@@ -47,6 +47,16 @@ export default async function SettingsPage() {
             <input className="inp" name="upi_qr" type="file" accept="image/*" />
           </div>
         </div>
+        <div className="row-2">
+          <div style={{ marginBottom: 16 }}>
+            <label className="fld">Signature {shop.signature_url ? <span style={{ color: "var(--green)" }}>(uploaded ✓)</span> : ""}</label>
+            <input className="inp" name="signature" type="file" accept="image/*" />
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label className="fld">Terms &amp; Conditions (shown on invoice)</label>
+            <input className="inp" name="terms" defaultValue={shop.terms || ""} placeholder="e.g. Goods once sold will not be taken back." />
+          </div>
+        </div>
         <p style={{ fontSize: 13, color: "var(--mut)", marginBottom: 18 }}>
           Next invoice number: <b style={{ color: "var(--txt)" }}>{shop.invoice_prefix}{String(shop.next_invoice_no).padStart(4, "0")}</b>
         </p>
