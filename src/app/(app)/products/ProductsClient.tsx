@@ -22,28 +22,28 @@ export default function ProductsClient({ products }: { products: Product[] }) {
   const filtered = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || p.hsn.includes(q));
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+    <div className="animate-fade-in">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: 23, fontWeight: 800 }}>Products &amp; Stock</h2>
-          <p style={{ color: "var(--mut)", fontSize: 13 }}>{products.length} products</p>
+          <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>Products &amp; Stock</h2>
+          <p style={{ color: "var(--mut)", fontSize: 13.5 }}>{products.length} products</p>
         </div>
         <button className="btn btn-primary" onClick={add}>+ Add Product <kbd style={kbdHint}>A</kbd></button>
       </div>
 
-      <div className="card" style={{ padding: "16px 20px" }}>
-        <input className="inp" placeholder="Search products…" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 14, maxWidth: 320 }} />
+      <div className="card" style={{ padding: "18px 22px" }}>
+        <input className="inp" placeholder="Search products…" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 16, maxWidth: 340 }} />
         <table className="tbl">
           <thead><tr><th>Name</th><th>HSN</th><th>Unit</th><th className="r">Price</th><th className="r">GST%</th><th className="r">Stock</th><th></th></tr></thead>
           <tbody>
             {filtered.map((p) => (
               <tr key={p.id}>
-                <td style={{ fontWeight: 700 }}>{p.name}</td>
-                <td>{p.hsn}</td>
-                <td>{p.unit}</td>
-                <td className="r">{money(p.price)}</td>
-                <td className="r">{p.gst}%</td>
-                <td className="r" style={{ color: p.stock <= p.low ? "var(--red)" : undefined, fontWeight: 700 }}>{p.stock}</td>
+                <td style={{ fontWeight: 700, color: "var(--txt)" }}>{p.name}</td>
+                <td style={{ color: "var(--mut)" }}>{p.hsn}</td>
+                <td style={{ color: "var(--mut)" }}>{p.unit}</td>
+                <td className="r" style={{ fontWeight: 600 }}>{money(p.price)}</td>
+                <td className="r" style={{ color: "var(--mut)" }}>{p.gst}%</td>
+                <td className="r" style={{ color: p.stock <= p.low ? "var(--red)" : "var(--green)", fontWeight: 700 }}>{p.stock}</td>
                 <td className="r">
                   <button className="btn btn-sm" onClick={() => edit(p)}>Edit</button>{" "}
                   <form action={deleteProduct} style={{ display: "inline" }}>
@@ -53,15 +53,15 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 </td>
               </tr>
             ))}
-            {!filtered.length && <tr><td colSpan={7} style={{ color: "var(--mut)" }}>No products.</td></tr>}
+            {!filtered.length && <tr><td colSpan={7} style={{ color: "var(--mut)", padding: "20px 12px" }}>No products.</td></tr>}
           </tbody>
         </table>
       </div>
 
       {open && (
-        <div onClick={() => setOpen(false)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} className="card modal-box" style={modalBox}>
-            <h3 style={{ fontWeight: 800, marginBottom: 16 }}>{form.id ? "Edit" : "Add"} Product</h3>
+        <div onClick={() => setOpen(false)} className="modal-bg">
+          <div onClick={(e) => e.stopPropagation()} className="card modal-box">
+            <h3 style={{ fontWeight: 800, marginBottom: 18, fontSize: 17 }}>{form.id ? "Edit" : "Add"} Product</h3>
             <form action={async (fd) => { await saveProduct(fd); setOpen(false); }}>
               <input type="hidden" name="id" value={form.id} />
               <Field label="Name" name="name" value={form.name} req autoFocus />
@@ -78,7 +78,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 <Field label="Low at" name="low" value={form.low} type="number" />
                 <Field label="Cost" name="cost" value={form.cost} type="number" />
               </div>
-              <div style={{ display: "flex", gap: 10, marginTop: 14, justifyContent: "flex-end" }}>
+              <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "flex-end" }}>
                 <button type="button" className="btn" onClick={() => setOpen(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Save</button>
               </div>
@@ -92,12 +92,9 @@ export default function ProductsClient({ products }: { products: Product[] }) {
 
 function Field({ label, name, value, type = "text", req = false, autoFocus = false }: { label: string; name: string; value: string; type?: string; req?: boolean; autoFocus?: boolean }) {
   return (
-    <div style={{ marginBottom: 12 }}>
+    <div style={{ marginBottom: 14 }}>
       <label className="fld">{label}</label>
       <input className="inp" name={name} type={type} defaultValue={value} required={req} step="any" autoFocus={autoFocus} />
     </div>
   );
 }
-
-const modalBg: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(28,26,58,.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 };
-const modalBox: React.CSSProperties = { width: 460, padding: 26, maxHeight: "90vh", overflow: "auto" };

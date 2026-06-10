@@ -9,39 +9,41 @@ export default function DuesClient({ invoices }: { invoices: Invoice[] }) {
   const totalDue = invoices.reduce((s, i) => s + invoiceDue(i), 0);
 
   return (
-    <div>
-      <h2 style={{ fontSize: 23, fontWeight: 800, marginBottom: 4 }}>Dues &amp; Payments</h2>
-      <p style={{ color: "var(--mut)", fontSize: 13, marginBottom: 18 }}>
-        {invoices.length} unpaid invoices · <b style={{ color: "var(--red)" }}>{money(totalDue)}</b> outstanding
-      </p>
+    <div className="animate-fade-in">
+      <div style={{ marginBottom: 22 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>Dues &amp; Payments</h2>
+        <p style={{ color: "var(--mut)", fontSize: 13.5 }}>
+          {invoices.length} unpaid invoices · <b style={{ color: "var(--red)" }}>{money(totalDue)}</b> outstanding
+        </p>
+      </div>
 
-      <div className="card" style={{ padding: "16px 20px" }}>
+      <div className="card" style={{ padding: "18px 22px" }}>
         <table className="tbl">
           <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th className="r">Total</th><th className="r">Paid</th><th className="r">Due</th><th></th></tr></thead>
           <tbody>
             {invoices.map((i) => (
               <tr key={i.id}>
-                <td style={{ fontWeight: 700 }}>{i.no}</td>
-                <td>{fmtDate(i.date)}</td>
-                <td>{i.customer_name}</td>
-                <td className="r">{money(i.total)}</td>
-                <td className="r">{money(i.paid)}</td>
+                <td style={{ fontWeight: 700, color: "var(--txt)" }}>{i.no}</td>
+                <td style={{ color: "var(--mut)" }}>{fmtDate(i.date)}</td>
+                <td style={{ color: "var(--mut)" }}>{i.customer_name}</td>
+                <td className="r" style={{ fontWeight: 600 }}>{money(i.total)}</td>
+                <td className="r" style={{ color: "var(--mut)" }}>{money(i.paid)}</td>
                 <td className="r" style={{ color: "var(--red)", fontWeight: 700 }}>{money(invoiceDue(i))}</td>
                 <td className="r"><button className="btn btn-sm btn-green" onClick={() => setActive(i)}>Record Payment</button></td>
               </tr>
             ))}
-            {!invoices.length && <tr><td colSpan={7} style={{ color: "var(--mut)" }}>No outstanding dues 🎉</td></tr>}
+            {!invoices.length && <tr><td colSpan={7} style={{ color: "var(--mut)", padding: "20px 12px" }}>No outstanding dues 🎉</td></tr>}
           </tbody>
         </table>
       </div>
 
       {active && (
-        <div onClick={() => setActive(null)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} className="card modal-box" style={modalBox}>
-            <h3 style={{ fontWeight: 800, marginBottom: 6 }}>Record Payment</h3>
-            <p style={{ fontSize: 13, color: "var(--mut)", marginBottom: 14 }}>
-              <b>{active.no}</b> — {active.customer_name}<br />
-              Total {money(active.total)} · Paid {money(active.paid)} · <b>Due {money(invoiceDue(active))}</b>
+        <div onClick={() => setActive(null)} className="modal-bg">
+          <div onClick={(e) => e.stopPropagation()} className="card modal-box">
+            <h3 style={{ fontWeight: 800, marginBottom: 8, fontSize: 17 }}>Record Payment</h3>
+            <p style={{ fontSize: 13.5, color: "var(--mut)", marginBottom: 16 }}>
+              <b style={{ color: "var(--txt)" }}>{active.no}</b> — {active.customer_name}<br />
+              Total {money(active.total)} · Paid {money(active.paid)} · <b style={{ color: "var(--red)" }}>Due {money(invoiceDue(active))}</b>
             </p>
             <form action={async (fd) => { await addPayment(fd); setActive(null); }}>
               <input type="hidden" name="invoice_id" value={active.id} />
@@ -51,16 +53,16 @@ export default function DuesClient({ invoices }: { invoices: Invoice[] }) {
                   <select className="inp" name="mode" defaultValue="Cash"><option>Cash</option><option>UPI</option><option>Card</option><option>Cheque</option></select>
                 </div>
               </div>
-              <div style={{ marginTop: 12 }}><label className="fld">Date</label><input className="inp" name="date" type="date" defaultValue={todayISO()} /></div>
+              <div style={{ marginTop: 14 }}><label className="fld">Date</label><input className="inp" name="date" type="date" defaultValue={todayISO()} /></div>
               {active.payments?.length > 0 && (
-                <div style={{ marginTop: 14 }}>
+                <div style={{ marginTop: 16 }}>
                   <label className="fld">Payment history</label>
                   <table className="tbl" style={{ fontSize: 12 }}>
-                    <tbody>{active.payments.map((p, k) => <tr key={k}><td>{fmtDate(p.date)}</td><td>{p.mode}</td><td className="r">{money(p.amount)}</td></tr>)}</tbody>
+                    <tbody>{active.payments.map((p, k) => <tr key={k}><td style={{ color: "var(--mut)" }}>{fmtDate(p.date)}</td><td style={{ color: "var(--mut)" }}>{p.mode}</td><td className="r" style={{ fontWeight: 700 }}>{money(p.amount)}</td></tr>)}</tbody>
                   </table>
                 </div>
               )}
-              <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "flex-end" }}>
+              <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
                 <button type="button" className="btn" onClick={() => setActive(null)}>Cancel</button>
                 <button type="submit" className="btn btn-green">Save Payment</button>
               </div>
@@ -71,6 +73,3 @@ export default function DuesClient({ invoices }: { invoices: Invoice[] }) {
     </div>
   );
 }
-
-const modalBg: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(28,26,58,.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 };
-const modalBox: React.CSSProperties = { width: 440, padding: 26, maxHeight: "90vh", overflow: "auto" };

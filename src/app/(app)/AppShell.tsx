@@ -96,34 +96,46 @@ export default function AppShell({
   return (
     <div className="shell">
       <aside className={"side no-print" + (open ? " open" : "")}>
-        <div style={{ padding: "22px 20px 18px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-            <div style={{ width: 42, height: 42, borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, background: "linear-gradient(135deg,#fbbf24,#f59e0b)", boxShadow: "0 6px 18px rgba(245,158,11,.55)" }}>⚡</div>
+        <div style={{ padding: "24px 20px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <img src="/logo.svg" alt="Hisab" width={40} height={40} style={{ borderRadius: 12, display: "block" }} />
             <div>
-              <b style={{ fontSize: 18, color: "#fff", display: "block" }}>Hisab</b>
-              <span style={{ fontSize: 11, color: "#a6a9d8" }}>POS &amp; GST Invoicing</span>
+              <b style={{ fontSize: 17, color: "#fff", display: "block", letterSpacing: 0.2 }}>Hisab</b>
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>POS &amp; GST Invoicing</span>
             </div>
           </div>
         </div>
-        <nav style={{ flex: 1, padding: "10px 12px", overflow: "auto" }}>
+
+        <nav style={{ flex: 1, padding: "8px 12px", overflow: "auto" }}>
           {NAV.map((n) => {
             const active = path === n.href || path.startsWith(n.href + "/");
             return (
               <Link key={n.href} href={n.href} onClick={() => setOpen(false)} style={{
-                display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                color: active ? "#fff" : "#b9bce4", fontSize: 13.5, fontWeight: 600,
-                borderRadius: 12, marginBottom: 4, textDecoration: "none",
-                background: active ? "linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.08))" : "transparent",
+                display: "flex", alignItems: "center", gap: 12, padding: "11px 14px",
+                color: active ? "#fff" : "#94a3b8", fontSize: 13.5, fontWeight: 600,
+                borderRadius: 10, marginBottom: 3, textDecoration: "none",
+                background: active ? "rgba(14,165,233,.18)" : "transparent",
+                border: active ? "1px solid rgba(14,165,233,.25)" : "1px solid transparent",
+                transition: "all .15s ease",
+              }} onMouseEnter={(e) => {
+                if (!active) e.currentTarget.style.background = "rgba(148,163,184,.10)";
+              }} onMouseLeave={(e) => {
+                if (!active) e.currentTarget.style.background = "transparent";
               }}>
                 <span style={{ fontSize: 16, width: 22, textAlign: "center" }}>{n.icon}</span>
                 <span style={{ flex: 1 }}>{n.label}</span>
-                <kbd style={{ fontSize: 10, fontWeight: 700, color: "#a6a9d8", background: "rgba(255,255,255,.08)", borderRadius: 5, padding: "1px 5px" }}>{n.keys}</kbd>
+                <kbd style={{ fontSize: 10, fontWeight: 700, color: "#64748b", background: "rgba(148,163,184,.14)", borderRadius: 5, padding: "1px 5px" }}>{n.keys}</kbd>
               </Link>
             );
           })}
         </nav>
-        <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,.09)" }}>
-          <button onClick={() => setHelpOpen(true)} style={{ width: "100%", background: "rgba(255,255,255,.06)", color: "#b9bce4", border: "none", borderRadius: 9, padding: "8px", fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}>
+
+        <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(148,163,184,.12)" }}>
+          <button onClick={() => setHelpOpen(true)} style={{
+            width: "100%", background: "rgba(148,163,184,.10)", color: "#94a3b8", border: "none",
+            borderRadius: 9, padding: "9px", fontSize: 11.5, fontWeight: 600, cursor: "pointer",
+            transition: "background .15s",
+          }} onMouseEnter={(e) => e.currentTarget.style.background = "rgba(148,163,184,.16)"} onMouseLeave={(e) => e.currentTarget.style.background = "rgba(148,163,184,.10)"}>
             ⌨️ Shortcuts (press ?)
           </button>
         </div>
@@ -133,20 +145,23 @@ export default function AppShell({
 
       <div className="main">
         <header className="topbar no-print">
-          <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-            <button className="hamburger" aria-label="Menu (m)" onClick={() => setOpen(true)}>☰</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            <button className="hamburger" aria-label="Menu (m)" onClick={() => setOpen(true)} style={{ borderRadius: 8, padding: 6, color: "var(--mut)" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{shop.name}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "var(--txt)" }}>{shop.name}</div>
               <small style={{ color: "var(--mut)", fontSize: 11 }}>{shop.state}{shop.gstin ? " · " + shop.gstin : ""}</small>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={() => setCmdOpen(true)} className="cmdk-btn" aria-label="Search (Ctrl+K)">
-              <span>🔍 Search</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span>Search</span>
               <kbd style={{ fontSize: 11, fontWeight: 700, color: "var(--mut)", background: "#fff", border: "1px solid var(--line)", borderRadius: 5, padding: "1px 6px" }}>⌘K</kbd>
             </button>
             <form action={signOut}>
-              <button className="btn btn-sm" type="submit">Sign out</button>
+              <button className="btn btn-sm btn-ghost" type="submit">Sign out</button>
             </form>
           </div>
         </header>

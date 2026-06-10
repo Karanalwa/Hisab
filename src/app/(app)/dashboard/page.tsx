@@ -25,65 +25,70 @@ export default async function Dashboard() {
   const lowStock = products.filter((p) => p.stock <= p.low);
 
   const stats = [
-    { label: "Today's Sales", value: money(todaySales), grad: "linear-gradient(135deg,#34d399,#10b981)", icon: "💵" },
-    { label: "Today's Invoices", value: String(todays.length), grad: "linear-gradient(135deg,#22d3ee,#06b6d4)", icon: "🧾" },
-    { label: "All-time Sales", value: money(totalSales), grad: "linear-gradient(135deg,#6366f1,#8b5cf6)", icon: "📈" },
-    { label: "Outstanding Dues", value: money(outstanding), grad: "linear-gradient(135deg,#fb7185,#ef4444)", icon: "⏳" },
-    { label: "Low-stock Items", value: String(lowStock.length), grad: "linear-gradient(135deg,#fbbf24,#f59e0b)", icon: "📦" },
+    { label: "Today's Sales", value: money(todaySales), color: "#10b981", icon: "💵", soft: "#d1fae5" },
+    { label: "Today's Invoices", value: String(todays.length), color: "#0ea5e9", icon: "🧾", soft: "#e0f2fe" },
+    { label: "All-time Sales", value: money(totalSales), color: "#6366f1", icon: "📈", soft: "#e0e7ff" },
+    { label: "Outstanding Dues", value: money(outstanding), color: "#ef4444", icon: "⏳", soft: "#fee2e2" },
+    { label: "Low-stock Items", value: String(lowStock.length), color: "#f59e0b", icon: "📦", soft: "#fef3c7" },
   ];
 
   return (
-    <div>
-      <h2 style={{ fontSize: 23, fontWeight: 800, marginBottom: 4 }}>Dashboard</h2>
-      <p style={{ color: "var(--mut)", fontSize: 13, marginBottom: 20 }}>Welcome back to {shop?.name}</p>
+    <div className="animate-fade-in">
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>Dashboard</h2>
+        <p style={{ color: "var(--mut)", fontSize: 13.5 }}>Welcome back to {shop?.name}</p>
+      </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(205px,1fr))", gap: 16, marginBottom: 22 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 16, marginBottom: 24 }}>
         {stats.map((s) => (
-          <div key={s.label} className="card" style={{ padding: 18, display: "flex", alignItems: "center", gap: 15 }}>
-            <div style={{ width: 54, height: 54, borderRadius: 15, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25, color: "#fff", background: s.grad }}>{s.icon}</div>
-            <div>
-              <div style={{ fontSize: 11, color: "var(--mut)", textTransform: "uppercase", letterSpacing: ".5px", fontWeight: 700 }}>{s.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, marginTop: 3 }}>{s.value}</div>
+          <div key={s.label} className="card card-hover" style={{ padding: 20, display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 22, color: s.color, background: s.soft, flexShrink: 0
+            }}>{s.icon}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 11.5, color: "var(--mut)", textTransform: "uppercase", letterSpacing: ".6px", fontWeight: 700 }}>{s.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4, letterSpacing: -0.3 }}>{s.value}</div>
             </div>
           </div>
         ))}
       </div>
 
       <div className="grid-2">
-        <div className="card" style={{ padding: "20px 22px" }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 14, display: "flex", justifyContent: "space-between" }}>
-            <span>Recent Invoices</span>
-            <Link href="/invoices" style={{ fontSize: 12, color: "var(--indigo)" }}>View all →</Link>
-          </h3>
+        <div className="card" style={{ padding: "22px 24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--txt)" }}>Recent Invoices</h3>
+            <Link href="/invoices" style={{ fontSize: 12.5, fontWeight: 700, color: "var(--brand)", textDecoration: "none" }}>View all →</Link>
+          </div>
           <table className="tbl">
             <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th className="r">Total</th></tr></thead>
             <tbody>
               {invoices.slice(0, 8).map((i) => (
                 <tr key={i.id}>
-                  <td style={{ fontWeight: 700 }}>{i.no}</td>
-                  <td>{i.customer_name}</td>
-                  <td>{fmtDate(i.date)}</td>
-                  <td className="r">{money(i.total)}</td>
+                  <td style={{ fontWeight: 700, color: "var(--txt)" }}>{i.no}</td>
+                  <td style={{ color: "var(--mut)" }}>{i.customer_name}</td>
+                  <td style={{ color: "var(--mut)" }}>{fmtDate(i.date)}</td>
+                  <td className="r" style={{ fontWeight: 700 }}>{money(i.total)}</td>
                 </tr>
               ))}
-              {!invoices.length && <tr><td colSpan={4} style={{ color: "var(--mut)" }}>No invoices yet. Create one from Billing.</td></tr>}
+              {!invoices.length && <tr><td colSpan={4} style={{ color: "var(--mut)", padding: "20px 12px" }}>No invoices yet. Create one from Billing.</td></tr>}
             </tbody>
           </table>
         </div>
 
-        <div className="card" style={{ padding: "20px 22px" }}>
-          <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 14 }}>Low Stock Alerts</h3>
+        <div className="card" style={{ padding: "22px 24px" }}>
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--txt)", marginBottom: 16 }}>Low Stock Alerts</h3>
           <table className="tbl">
             <thead><tr><th>Product</th><th className="r">Stock</th><th className="r">Low at</th></tr></thead>
             <tbody>
               {lowStock.slice(0, 10).map((p) => (
                 <tr key={p.id}>
-                  <td>{p.name}</td>
+                  <td style={{ fontWeight: 600, color: "var(--txt)" }}>{p.name}</td>
                   <td className="r" style={{ color: "var(--red)", fontWeight: 700 }}>{p.stock}</td>
-                  <td className="r">{p.low}</td>
+                  <td className="r" style={{ color: "var(--mut)" }}>{p.low}</td>
                 </tr>
               ))}
-              {!lowStock.length && <tr><td colSpan={3} style={{ color: "var(--mut)" }}>All stock levels healthy 🎉</td></tr>}
+              {!lowStock.length && <tr><td colSpan={3} style={{ color: "var(--mut)", padding: "20px 12px" }}>All stock levels healthy 🎉</td></tr>}
             </tbody>
           </table>
         </div>

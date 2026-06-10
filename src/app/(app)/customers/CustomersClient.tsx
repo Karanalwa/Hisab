@@ -24,29 +24,29 @@ export default function CustomersClient({ customers, outstanding }: { customers:
   const filtered = customers.filter((c) => c.name.toLowerCase().includes(q.toLowerCase()) || (c.phone || "").includes(q));
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+    <div className="animate-fade-in">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h2 style={{ fontSize: 23, fontWeight: 800 }}>Customers</h2>
-          <p style={{ color: "var(--mut)", fontSize: 13 }}>{customers.length} customers</p>
+          <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>Customers</h2>
+          <p style={{ color: "var(--mut)", fontSize: 13.5 }}>{customers.length} customers</p>
         </div>
         <button className="btn btn-primary" onClick={add}>+ Add Customer <kbd style={kbdHint}>A</kbd></button>
       </div>
 
-      <div className="card" style={{ padding: "16px 20px" }}>
-        <input className="inp" placeholder="Search customers…" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 14, maxWidth: 320 }} />
+      <div className="card" style={{ padding: "18px 22px" }}>
+        <input className="inp" placeholder="Search customers…" value={q} onChange={(e) => setQ(e.target.value)} style={{ marginBottom: 16, maxWidth: 340 }} />
         <table className="tbl">
           <thead><tr><th>Name</th><th>Phone</th><th>State</th><th>GSTIN</th><th className="r">Outstanding</th><th></th></tr></thead>
           <tbody>
             {filtered.map((c) => (
               <tr key={c.id}>
-                <td style={{ fontWeight: 700 }}>{c.name}</td>
-                <td>{c.phone}</td>
-                <td>{c.state}</td>
-                <td>{c.gstin}</td>
-                <td className="r" style={{ color: (outstanding[c.id] || 0) > 0 ? "var(--red)" : undefined, fontWeight: 700 }}>{money(outstanding[c.id] || 0)}</td>
+                <td style={{ fontWeight: 700, color: "var(--txt)" }}>{c.name}</td>
+                <td style={{ color: "var(--mut)" }}>{c.phone}</td>
+                <td style={{ color: "var(--mut)" }}>{c.state}</td>
+                <td style={{ color: "var(--mut)", fontSize: 12 }}>{c.gstin}</td>
+                <td className="r" style={{ color: (outstanding[c.id] || 0) > 0 ? "var(--red)" : "var(--green)", fontWeight: 700 }}>{money(outstanding[c.id] || 0)}</td>
                 <td className="r" style={{ whiteSpace: "nowrap" }}>
-                  <Link href={`/customers/${c.id}/ledger`} className="btn btn-sm">Ledger</Link>{" "}
+                  <Link href={`/customers/${c.id}/ledger`} className="btn btn-sm" style={{ textDecoration: "none" }}>Ledger</Link>{" "}
                   <button className="btn btn-sm" onClick={() => edit(c)}>Edit</button>{" "}
                   <form action={deleteCustomer} style={{ display: "inline" }}>
                     <input type="hidden" name="id" value={c.id} />
@@ -55,31 +55,31 @@ export default function CustomersClient({ customers, outstanding }: { customers:
                 </td>
               </tr>
             ))}
-            {!filtered.length && <tr><td colSpan={6} style={{ color: "var(--mut)" }}>No customers.</td></tr>}
+            {!filtered.length && <tr><td colSpan={6} style={{ color: "var(--mut)", padding: "20px 12px" }}>No customers.</td></tr>}
           </tbody>
         </table>
       </div>
 
       {open && (
-        <div onClick={() => setOpen(false)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} className="card modal-box" style={modalBox}>
-            <h3 style={{ fontWeight: 800, marginBottom: 16 }}>{form.id ? "Edit" : "Add"} Customer</h3>
+        <div onClick={() => setOpen(false)} className="modal-bg">
+          <div onClick={(e) => e.stopPropagation()} className="card modal-box">
+            <h3 style={{ fontWeight: 800, marginBottom: 18, fontSize: 17 }}>{form.id ? "Edit" : "Add"} Customer</h3>
             <form action={async (fd) => { await saveCustomer(fd); setOpen(false); }}>
               <input type="hidden" name="id" value={form.id} />
-              <div style={{ marginBottom: 12 }}><label className="fld">Name</label><input className="inp" name="name" defaultValue={form.name} required autoFocus /></div>
+              <div style={{ marginBottom: 14 }}><label className="fld">Name</label><input className="inp" name="name" defaultValue={form.name} required autoFocus /></div>
               <div className="row-2">
-                <div style={{ marginBottom: 12 }}><label className="fld">Phone</label><input className="inp" name="phone" defaultValue={form.phone} /></div>
-                <div style={{ marginBottom: 12 }}><label className="fld">GSTIN</label><input className="inp" name="gstin" defaultValue={form.gstin} /></div>
+                <div style={{ marginBottom: 14 }}><label className="fld">Phone</label><input className="inp" name="phone" defaultValue={form.phone} /></div>
+                <div style={{ marginBottom: 14 }}><label className="fld">GSTIN</label><input className="inp" name="gstin" defaultValue={form.gstin} /></div>
               </div>
-              <div style={{ marginBottom: 12 }}>
+              <div style={{ marginBottom: 14 }}>
                 <label className="fld">State</label>
                 <select className="inp" name="state" defaultValue={form.state}>
                   <option value="">—</option>
                   {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
-              <div style={{ marginBottom: 12 }}><label className="fld">Address</label><input className="inp" name="address" defaultValue={form.address} /></div>
-              <div style={{ display: "flex", gap: 10, marginTop: 14, justifyContent: "flex-end" }}>
+              <div style={{ marginBottom: 14 }}><label className="fld">Address</label><input className="inp" name="address" defaultValue={form.address} /></div>
+              <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "flex-end" }}>
                 <button type="button" className="btn" onClick={() => setOpen(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Save</button>
               </div>
@@ -90,6 +90,3 @@ export default function CustomersClient({ customers, outstanding }: { customers:
     </div>
   );
 }
-
-const modalBg: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(28,26,58,.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 };
-const modalBox: React.CSSProperties = { width: 460, padding: 26, maxHeight: "90vh", overflow: "auto" };

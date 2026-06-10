@@ -20,7 +20,7 @@ export default function Sidebar() {
     <aside style={{ width: 236, background: "linear-gradient(185deg,#211e54,#312e81 60%,#3b2f7a)", display: "flex", flexDirection: "column", position: "fixed", top: 0, bottom: 0, left: 0, zIndex: 20 }} className="no-print">
       <div style={{ padding: "22px 20px 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, background: "linear-gradient(135deg,#fbbf24,#f59e0b)", boxShadow: "0 6px 18px rgba(245,158,11,.55)" }}>⚡</div>
+          <img src="/logo.svg" alt="Hisab" width={42} height={42} style={{ borderRadius: 13, display: "block" }} />
           <div>
             <b style={{ fontSize: 18, color: "#fff", display: "block" }}>Hisab</b>
             <span style={{ fontSize: 11, color: "#a6a9d8" }}>POS &amp; GST Invoicing</span>

@@ -39,17 +39,20 @@ export function CommandPalette({ open, onClose, commands }: { open: boolean; onC
   }
 
   return (
-    <div onClick={onClose} role="dialog" aria-label="Command palette" style={{ position: "fixed", inset: 0, background: "rgba(28,26,58,.4)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 60, padding: "12vh 16px 16px" }}>
-      <div onClick={(e) => e.stopPropagation()} className="card" style={{ width: "100%", maxWidth: 540, padding: 0, overflow: "hidden" }}>
-        <input
-          ref={inputRef}
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setSel(0); }}
-          onKeyDown={onKeyDown}
-          placeholder="Type a page or action…  (↑↓ to move, Enter to run, Esc to close)"
-          style={{ width: "100%", padding: "16px 18px", border: "none", borderBottom: "1px solid var(--line)", fontSize: 15, outline: "none", background: "#fff", color: "var(--txt)" }}
-        />
-        <div style={{ maxHeight: 360, overflow: "auto", padding: 8 }}>
+    <div onClick={onClose} role="dialog" aria-label="Command palette" className="modal-bg" style={{ alignItems: "flex-start", paddingTop: "14vh" }}>
+      <div onClick={(e) => e.stopPropagation()} className="card" style={{ width: "100%", maxWidth: 560, padding: 0, overflow: "hidden", boxShadow: "0 20px 60px rgba(15,23,42,.18)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", borderBottom: "1px solid var(--line)" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: "var(--mut)", flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            ref={inputRef}
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setSel(0); }}
+            onKeyDown={onKeyDown}
+            placeholder="Type a page or action…"
+            style={{ width: "100%", border: "none", fontSize: 15.5, outline: "none", background: "transparent", color: "var(--txt)" }}
+          />
+        </div>
+        <div style={{ maxHeight: 380, overflow: "auto", padding: 6 }}>
           {filtered.map((c, i) => (
             <button
               key={c.id}
@@ -58,19 +61,20 @@ export function CommandPalette({ open, onClose, commands }: { open: boolean; onC
               style={{
                 width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
                 padding: "11px 14px", borderRadius: 10, border: "none", cursor: "pointer", textAlign: "left",
-                background: i === sel ? "linear-gradient(135deg,rgba(99,102,241,.14),rgba(139,92,246,.10))" : "transparent",
+                background: i === sel ? "var(--brand-soft)" : "transparent",
                 color: "var(--txt)", fontSize: 14, fontWeight: 600,
+                transition: "background .1s",
               }}
             >
-              <span><span style={{ marginRight: 10, opacity: 0.6, fontSize: 12, fontWeight: 700, textTransform: "uppercase" }}>{c.hint}</span>{c.label}</span>
+              <span><span style={{ marginRight: 10, opacity: 0.55, fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".4px" }}>{c.hint}</span>{c.label}</span>
               {c.keys && <kbd style={kbd}>{c.keys}</kbd>}
             </button>
           ))}
-          {!filtered.length && <div style={{ padding: 16, color: "var(--mut)", fontSize: 14 }}>No matches.</div>}
+          {!filtered.length && <div style={{ padding: 18, color: "var(--mut)", fontSize: 14 }}>No matches.</div>}
         </div>
       </div>
     </div>
   );
 }
 
-const kbd: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "var(--mut)", background: "#f4f5fd", border: "1px solid var(--line)", borderRadius: 6, padding: "2px 7px", fontFamily: "ui-monospace, monospace" };
+const kbd: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "var(--mut)", background: "#f1f5f9", border: "1px solid var(--line)", borderRadius: 6, padding: "2px 8px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" };

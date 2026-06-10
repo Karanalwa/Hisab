@@ -20,12 +20,12 @@ export default function StockInForm({ products }: { products: Product[] }) {
         <div><label className="fld">Quantity</label><input className="inp" name="qty" type="number" step="any" required /></div>
         <div><label className="fld">Cost / unit</label><input className="inp" name="cost" type="number" step="any" /></div>
       </div>
-      <div className="row-3" style={{ marginTop: 12 }}>
+      <div className="row-3" style={{ marginTop: 14 }}>
         <div><label className="fld">Date</label><input className="inp" name="date" type="date" defaultValue={todayISO()} /></div>
         <div><label className="fld">Supplier</label><input className="inp" name="supplier" /></div>
         <div><label className="fld">Note</label><input className="inp" name="note" /></div>
       </div>
-      <button className="btn btn-green" type="submit" style={{ marginTop: 14 }}>Add Stock <kbd style={kbdHint}>A</kbd></button>
+      <button className="btn btn-green" type="submit" style={{ marginTop: 16 }}>Add Stock <kbd style={kbdHint}>A</kbd></button>
     </form>
   );
 }

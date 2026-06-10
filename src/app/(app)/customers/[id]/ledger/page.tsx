@@ -20,7 +20,6 @@ export default async function CustomerLedger({ params }: { params: Promise<{ id:
   const customer = cust as Customer;
   const invoices = (invData || []) as Invoice[];
 
-  // build debit (invoice) / credit (payment) entries
   const entries: Entry[] = [];
   for (const i of invoices) {
     entries.push({ date: i.date, type: "Invoice", ref: i.no, debit: i.total || 0, credit: 0 });
@@ -37,29 +36,29 @@ export default async function CustomerLedger({ params }: { params: Promise<{ id:
   let running = 0;
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <LedgerActions />
 
       <div className="inv-page">
-        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12, borderBottom: "3px solid #6366f1", paddingBottom: 14, marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 14, borderBottom: "3px solid var(--brand)", paddingBottom: 16, marginBottom: 18 }}>
           <div>
-            <div style={{ fontSize: 11, color: "#888", textTransform: "uppercase", letterSpacing: ".5px" }}>Statement of Account</div>
-            <div style={{ fontSize: 22, fontWeight: 800 }}>{customer.name}</div>
-            <div style={{ fontSize: 12, color: "#555" }}>
+            <div style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".5px", fontWeight: 700 }}>Statement of Account</div>
+            <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4, letterSpacing: -0.3 }}>{customer.name}</div>
+            <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 4 }}>
               {customer.phone}{customer.state ? " · " + customer.state : ""}{customer.gstin ? " · GSTIN " + customer.gstin : ""}
             </div>
-            {customer.address && <div style={{ fontSize: 12, color: "#555" }}>{customer.address}</div>}
+            {customer.address && <div style={{ fontSize: 12.5, color: "#64748b" }}>{customer.address}</div>}
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: "#888" }}>Outstanding Balance</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: balance > 0.5 ? "var(--red)" : "var(--green)" }}>{money(balance)}</div>
+            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px" }}>Outstanding Balance</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: balance > 0.5 ? "var(--red)" : "var(--green)", letterSpacing: -0.5, marginTop: 4 }}>{money(balance)}</div>
           </div>
         </div>
 
-        <div className="row-3" style={{ marginBottom: 16 }}>
+        <div className="row-3" style={{ marginBottom: 18 }}>
           <Stat label="Total Billed" value={money(totalBilled)} />
           <Stat label="Total Paid" value={money(totalPaid)} />
-          <Stat label="Balance Due" value={money(balance)} />
+          <Stat label="Balance Due" value={money(balance)} danger={balance > 0.5} />
         </div>
 
         <div className="inv-table-wrap">
@@ -75,23 +74,23 @@ export default async function CustomerLedger({ params }: { params: Promise<{ id:
                 running += e.debit - e.credit;
                 return (
                   <tr key={idx}>
-                    <td>{fmtDate(e.date)}</td>
-                    <td>{e.type}</td>
-                    <td>{e.ref}</td>
-                    <td className="r">{e.debit ? money(e.debit) : "—"}</td>
-                    <td className="r">{e.credit ? money(e.credit) : "—"}</td>
-                    <td className="r" style={{ fontWeight: 700 }}>{money(running)}</td>
+                    <td style={{ color: "#64748b" }}>{fmtDate(e.date)}</td>
+                    <td style={{ fontWeight: 600 }}>{e.type}</td>
+                    <td style={{ color: "#64748b" }}>{e.ref}</td>
+                    <td className="r" style={{ fontWeight: 600 }}>{e.debit ? money(e.debit) : "—"}</td>
+                    <td className="r" style={{ fontWeight: 600 }}>{e.credit ? money(e.credit) : "—"}</td>
+                    <td className="r" style={{ fontWeight: 800, color: running > 0.5 ? "var(--red)" : "var(--green)" }}>{money(running)}</td>
                   </tr>
                 );
               })}
-              {!entries.length && <tr><td colSpan={6} style={{ color: "var(--mut)" }}>No transactions yet.</td></tr>}
+              {!entries.length && <tr><td colSpan={6} style={{ color: "var(--mut)", padding: "20px 12px" }}>No transactions yet.</td></tr>}
             </tbody>
             <tfoot>
-              <tr style={{ borderTop: "2px solid #1c1a3a", fontWeight: 800 }}>
-                <td colSpan={3}>Total</td>
-                <td className="r">{money(totalBilled)}</td>
-                <td className="r">{money(totalPaid)}</td>
-                <td className="r" style={{ color: balance > 0.5 ? "var(--red)" : "var(--green)" }}>{money(balance)}</td>
+              <tr style={{ borderTop: "2px solid #0f172a", fontWeight: 800 }}>
+                <td colSpan={3} style={{ paddingTop: 10 }}>Total</td>
+                <td className="r" style={{ paddingTop: 10 }}>{money(totalBilled)}</td>
+                <td className="r" style={{ paddingTop: 10 }}>{money(totalPaid)}</td>
+                <td className="r" style={{ color: balance > 0.5 ? "var(--red)" : "var(--green)", paddingTop: 10 }}>{money(balance)}</td>
               </tr>
             </tfoot>
           </table>
@@ -101,11 +100,11 @@ export default async function CustomerLedger({ params }: { params: Promise<{ id:
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, danger }: { label: string; value: string; danger?: boolean }) {
   return (
-    <div className="card" style={{ padding: 14 }}>
-      <div style={{ fontSize: 11, color: "var(--mut)", textTransform: "uppercase", fontWeight: 700 }}>{label}</div>
-      <div style={{ fontSize: 19, fontWeight: 800, marginTop: 4 }}>{value}</div>
+    <div className="card" style={{ padding: 16 }}>
+      <div style={{ fontSize: 11.5, color: "var(--mut)", textTransform: "uppercase", fontWeight: 700, letterSpacing: ".5px" }}>{label}</div>
+      <div style={{ fontSize: 20, fontWeight: 800, marginTop: 6, letterSpacing: -0.3, color: danger ? "var(--red)" : "var(--txt)" }}>{value}</div>
     </div>
   );
 }
