@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getShop } from "@/lib/shop";
 import { money, fmtDate } from "@/lib/gst";
 import { saveCashRegister } from "@/actions/cashRegister";
+import DatePicker from "./_client/DatePicker";
 import type { Invoice, CashRegister, CreditNote } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -83,8 +84,7 @@ export default async function RegisterPage({
         <div style={{ display: "flex", gap: 14, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 20 }}>
           <div>
             <label className="fld">Date</label>
-            <input className="inp" type="date" name="date_display" defaultValue={date} style={{ width: 180 }}
-              onChange={(e) => { const d = e.currentTarget.value; if (d) window.location.href = `/register?date=${d}`; }} />
+            <DatePicker defaultValue={date} />
           </div>
         </div>
 
