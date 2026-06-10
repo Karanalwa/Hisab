@@ -122,3 +122,12 @@ export type StockAdjustment = {
   reason: string;
   note: string;
 };
+
+export type Expense = {
+  id: string;
+  shop_id: string;
+  date: string;
+  category: string;
+  amount: number;
+  description: string;
+};

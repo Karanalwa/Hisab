@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { money, fmtDate } from "@/lib/gst";
 import type { Invoice } from "@/lib/types";
+import ReportsExport from "./ReportsExport";
 
 export const dynamic = "force-dynamic";
 
@@ -45,9 +46,12 @@ export default async function ReportsPage({
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>Reports</h2>
-        <p style={{ color: "var(--mut)", fontSize: 13.5 }}>Sales &amp; GST summary, ready for filing</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 22 }}>
+        <div>
+          <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>Reports</h2>
+          <p style={{ color: "var(--mut)", fontSize: 13.5 }}>Sales &amp; GST summary, ready for filing</p>
+        </div>
+        <ReportsExport invoices={list} from={from} to={to} />
       </div>
 
       <form className="card" style={{ padding: "16px 22px", marginBottom: 20, display: "flex", gap: 14, alignItems: "flex-end", flexWrap: "wrap" }}>

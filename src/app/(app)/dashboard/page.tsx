@@ -1,10 +1,21 @@
 import { createClient } from "@/lib/supabase/server";
 import { getShop } from "@/lib/shop";
 import { invoiceDue, money, fmtDate } from "@/lib/gst";
-import type { Invoice, Product } from "@/lib/types";
+import type { Invoice, Product, InvoiceItem } from "@/lib/types";
 import Link from "next/link";
+import DashboardCharts from "./DashboardCharts";
 
 export const dynamic = "force-dynamic";
+
+function last30Dates() {
+  const dates: string[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    dates.push(d.toISOString().slice(0, 10));
+  }
+  return dates;
+}
 
 export default async function Dashboard() {
   const shop = await getShop();
@@ -32,6 +43,28 @@ export default async function Dashboard() {
     { label: "Low-stock Items", value: String(lowStock.length), color: "#f59e0b", icon: "📦", soft: "#fef3c7" },
   ];
 
+  // ---- chart data ----
+  const dates30 = last30Dates();
+  const byDate: Record<string, number> = {};
+  invoices.forEach((i) => { byDate[i.date] = (byDate[i.date] || 0) + (i.total || 0); });
+  const trend = dates30.map((d) => ({ date: d.slice(5), total: byDate[d] || 0 }));
+
+  const prodRevenue: Record<string, number> = {};
+  invoices.forEach((inv) => {
+    inv.items.forEach((it: InvoiceItem) => {
+      const rev = (it.qty || 0) * (it.price || 0) * (1 - (it.disc || 0) / 100);
+      prodRevenue[it.name] = (prodRevenue[it.name] || 0) + rev;
+    });
+  });
+  const topProducts = Object.entries(prodRevenue)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, revenue]) => ({ name: name.length > 18 ? name.slice(0, 18) + "…" : name, revenue }));
+
+  const byMode: Record<string, number> = {};
+  invoices.forEach((i) => { byMode[i.pay_mode] = (byMode[i.pay_mode] || 0) + (i.total || 0); });
+  const payModes = Object.entries(byMode).map(([name, value]) => ({ name, value }));
+
   return (
     <div className="animate-fade-in">
       <div style={{ marginBottom: 24 }}>
@@ -54,7 +87,9 @@ export default async function Dashboard() {
         ))}
       </div>
 
-      <div className="grid-2">
+      <DashboardCharts trend={trend} topProducts={topProducts} payModes={payModes} />
+
+      <div className="grid-2" style={{ marginTop: 24 }}>
         <div className="card" style={{ padding: "22px 24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <h3 style={{ fontSize: 15, fontWeight: 800, color: "var(--txt)" }}>Recent Invoices</h3>

@@ -13,6 +13,7 @@ const NAV = [
   { href: "/invoices", icon: "📄", label: "Invoices", keys: "g i" },
   { href: "/dues", icon: "💰", label: "Dues & Payments", keys: "g u" },
   { href: "/register", icon: "🧮", label: "Cash Register", keys: "g r" },
+  { href: "/expenses", icon: "💸", label: "Expenses", keys: "g e" },
   { href: "/products", icon: "📦", label: "Products", keys: "g p" },
   { href: "/purchases", icon: "📥", label: "Stock In", keys: "g s" },
   { href: "/customers", icon: "👤", label: "Customers", keys: "g c" },
@@ -23,7 +24,7 @@ const NAV = [
 // g + letter -> destination
 const GO: Record<string, string> = {
   d: "/dashboard", b: "/billing", i: "/invoices", u: "/dues", r: "/register",
-  p: "/products", s: "/purchases", c: "/customers", t: "/reports", ",": "/settings",
+  e: "/expenses", p: "/products", s: "/purchases", c: "/customers", t: "/reports", ",": "/settings",
 };
 
 function isTyping() {

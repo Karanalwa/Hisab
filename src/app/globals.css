@@ -377,6 +377,14 @@ kbd { line-height: 1; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 
   .row-2, .row-3 { grid-template-columns: 1fr; }
 }
 
+/* ---------- Print ---------- */
+@media print {
+  .side, .topbar, .no-print { display: none !important; }
+  .main { margin-left: 0 !important; }
+  .content-pad { padding: 0 !important; }
+  body { background: #fff !important; color: #000 !important; }
+}
+
 @media print {
   .no-print { display: none !important; }
   body { background: #fff; }

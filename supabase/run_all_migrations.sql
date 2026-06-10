@@ -259,3 +259,22 @@ drop policy if exists stock_adjustments_rw on public.stock_adjustments;
 create policy stock_adjustments_rw on public.stock_adjustments
   for all using (shop_id = public.auth_shop_id())
   with check (shop_id = public.auth_shop_id());
+
+-- ---------- 9. EXPENSES ----------
+create table if not exists public.expenses (
+  id           uuid primary key default gen_random_uuid(),
+  shop_id      uuid not null references public.shops(id) on delete cascade,
+  date         date not null default current_date,
+  category     text not null default 'Other',
+  amount       numeric not null default 0,
+  description  text default '',
+  created_at   timestamptz default now()
+);
+create index if not exists expenses_shop_idx on public.expenses(shop_id);
+create index if not exists expenses_date_idx on public.expenses(shop_id, date);
+
+alter table public.expenses enable row level security;
+drop policy if exists expenses_rw on public.expenses;
+create policy expenses_rw on public.expenses
+  for all using (shop_id = public.auth_shop_id())
+  with check (shop_id = public.auth_shop_id());
