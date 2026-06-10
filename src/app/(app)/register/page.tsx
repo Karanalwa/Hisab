@@ -16,15 +16,34 @@ export default async function RegisterPage({
   const shop = await getShop();
   const supabase = await createClient();
 
-  const [{ data: invData }, { data: regData }, { data: cnData }] = await Promise.all([
-    supabase.from("invoices").select("*").eq("date", date),
-    supabase.from("cash_register").select("*").eq("date", date).limit(1),
-    supabase.from("credit_notes").select("*").eq("date", date),
-  ]);
+  // defensive fetches — if migration hasn't run, default to empty
+  let invoices: Invoice[] = [];
+  let reg: CashRegister | null = null;
+  let creditNotes: CreditNote[] = [];
+  let missingTable = false;
 
-  const invoices = (invData || []) as Invoice[];
-  const reg = (regData && regData[0] ? regData[0] : null) as CashRegister | null;
-  const creditNotes = (cnData || []) as CreditNote[];
+  try {
+    const { data } = await supabase.from("invoices").select("*").eq("date", date);
+    invoices = (data || []) as Invoice[];
+  } catch {
+    invoices = [];
+  }
+
+  try {
+    const { data } = await supabase.from("cash_register").select("*").eq("date", date).limit(1);
+    reg = (data && data[0] ? data[0] : null) as CashRegister | null;
+  } catch (e: unknown) {
+    const msg = String((e as { message?: string })?.message || "");
+    if (msg.includes("relation") && msg.includes("does not exist")) missingTable = true;
+    reg = null;
+  }
+
+  try {
+    const { data } = await supabase.from("credit_notes").select("*").eq("date", date);
+    creditNotes = (data || []) as CreditNote[];
+  } catch {
+    creditNotes = [];
+  }
 
   const byMode: Record<string, number> = {};
   invoices.forEach((i) => {
@@ -49,6 +68,15 @@ export default async function RegisterPage({
         <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3 }}>Cash Register</h2>
         <p style={{ color: "var(--mut)", fontSize: 13.5 }}>Daily cash drawer closing</p>
       </div>
+
+      {missingTable && (
+        <div className="card" style={{ padding: 18, marginBottom: 20, background: "var(--red-soft)", borderColor: "#fecaca" }}>
+          <div style={{ fontWeight: 700, color: "#b91c1c", marginBottom: 4 }}>Database migration required</div>
+          <p style={{ fontSize: 13, color: "#7f1d1d" }}>
+            The <code>cash_register</code> table does not exist yet. Open Supabase SQL Editor and run the migration file <code>supabase/migration_features.sql</code> to enable Cash Register, Returns, and Stock Adjustments.
+          </p>
+        </div>
+      )}
 
       <form action={saveCashRegister} className="card" style={{ padding: "22px 24px", marginBottom: 20 }}>
         <input type="hidden" name="date" value={date} />
@@ -90,7 +118,7 @@ export default async function RegisterPage({
         </div>
 
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-          <button className="btn btn-primary" type="submit">Save Register Entry</button>
+          <button className="btn btn-primary" type="submit" disabled={missingTable}>Save Register Entry</button>
           <div style={{ fontSize: 13, color: "var(--mut)" }}>
             Expected closing: <b style={{ color: expectedClosing === closing && closing > 0 ? "var(--green)" : "var(--txt)" }}>{money(expectedClosing)}</b>
             {closing > 0 && expectedClosing !== closing && (
