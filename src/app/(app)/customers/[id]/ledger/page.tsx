@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { money, fmtDate } from "@/lib/gst";
-import type { Customer, Invoice } from "@/lib/types";
+import type { Customer, Invoice, CreditNote } from "@/lib/types";
 import { notFound } from "next/navigation";
 import LedgerActions from "./LedgerActions";
 
@@ -12,13 +12,22 @@ export default async function CustomerLedger({ params }: { params: Promise<{ id:
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: cust }, { data: invData }] = await Promise.all([
+  const [{ data: cust }, { data: invData }, { data: cnData }] = await Promise.all([
     supabase.from("customers").select("*").eq("id", id).single(),
     supabase.from("invoices").select("*").eq("customer_id", id),
+    supabase.from("credit_notes").select("*").eq("shop_id", (await supabase.auth.getUser()).data.user ? undefined : undefined),
   ]);
   if (!cust) notFound();
   const customer = cust as Customer;
   const invoices = (invData || []) as Invoice[];
+
+  // get credit notes linked to this customer's invoices
+  const invoiceIds = invoices.map((i) => i.id);
+  let creditNotes: CreditNote[] = [];
+  if (invoiceIds.length) {
+    const { data: cn } = await supabase.from("credit_notes").select("*").in("invoice_id", invoiceIds);
+    creditNotes = (cn || []) as CreditNote[];
+  }
 
   const entries: Entry[] = [];
   for (const i of invoices) {
@@ -26,6 +35,9 @@ export default async function CustomerLedger({ params }: { params: Promise<{ id:
     for (const p of i.payments || []) {
       if (p.amount > 0) entries.push({ date: p.date, type: `Payment (${p.mode})`, ref: i.no, debit: 0, credit: p.amount });
     }
+  }
+  for (const cn of creditNotes) {
+    entries.push({ date: cn.date, type: `Credit Note (${cn.reason || "return"})`, ref: cn.no, debit: 0, credit: cn.total || 0 });
   }
   entries.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 

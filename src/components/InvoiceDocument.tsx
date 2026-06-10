@@ -1,5 +1,5 @@
 import { money, fmtDate, numWords } from "@/lib/gst";
-import type { Invoice } from "@/lib/types";
+import type { Invoice, CreditNote } from "@/lib/types";
 
 export type InvoiceShop = {
   name: string;
@@ -17,7 +17,9 @@ const th: React.CSSProperties = { textAlign: "left", padding: "9px 10px", border
 const td: React.CSSProperties = { padding: "9px 10px", borderBottom: "1px solid #e2e8f0", fontSize: 12.5 };
 
 /** Pure presentational tax-invoice document. Used by the authed view and the public link. */
-export default function InvoiceDocument({ inv, shop }: { inv: Invoice; shop: InvoiceShop }) {
+export default function InvoiceDocument({ inv, shop, creditNotes = [] }: { inv: Invoice; shop: InvoiceShop; creditNotes?: CreditNote[] }) {
+  const totalReturns = creditNotes.reduce((s, cn) => s + (cn.total || 0), 0);
+
   return (
     <div className="inv-page">
       <div className="inv-head">
@@ -77,6 +79,31 @@ export default function InvoiceDocument({ inv, shop }: { inv: Invoice; shop: Inv
         </table>
       </div>
 
+      {creditNotes.length > 0 && (
+        <div style={{ marginTop: 18 }}>
+          <div style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".5px", fontWeight: 700, marginBottom: 8 }}>Credit Notes / Returns</div>
+          {creditNotes.map((cn) => (
+            <div key={cn.id} style={{ marginBottom: 10, border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 14px", background: "#f8fafc" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>{cn.no}</span>
+                <span style={{ fontSize: 12, color: "#64748b" }}>{fmtDate(cn.date)}</span>
+              </div>
+              <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+                <tbody>
+                  {cn.items.map((it, idx) => (
+                    <tr key={idx}>
+                      <td style={{ padding: "3px 0" }}>{it.name}</td>
+                      <td style={{ padding: "3px 0", textAlign: "right" }}>{it.qty} × {money(it.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ textAlign: "right", fontWeight: 800, fontSize: 13, marginTop: 4, color: "var(--red)" }}>− {money(cn.total)}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="inv-totals">
         <div style={{ maxWidth: 320 }}>
           <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px" }}>Amount in words</div>
@@ -97,8 +124,13 @@ export default function InvoiceDocument({ inv, shop }: { inv: Invoice; shop: Inv
           <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid #0f172a", marginTop: 8, paddingTop: 10, fontSize: 18, fontWeight: 800 }}>
             <span>Total</span><span style={{ color: "var(--brand)" }}>{money(inv.total)}</span>
           </div>
+          {totalReturns > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "4px 0", color: "var(--red)" }}>
+              <span>Returns</span><span style={{ fontWeight: 600 }}>− {money(totalReturns)}</span>
+            </div>
+          )}
           <Line label="Paid" value={money(inv.paid)} />
-          <Line label="Due" value={money(Math.max(0, (inv.total || 0) - (inv.paid || 0)))} />
+          <Line label="Due" value={money(Math.max(0, (inv.total || 0) - (inv.paid || 0) - totalReturns))} />
         </div>
       </div>
 

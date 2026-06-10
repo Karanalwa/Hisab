@@ -87,3 +87,36 @@ export type Purchase = {
   supplier: string;
   note: string;
 };
+
+export type CreditNote = {
+  id: string;
+  shop_id: string;
+  invoice_id: string;
+  no: string;
+  date: string;
+  items: InvoiceItem[];
+  total: number;
+  reason: string;
+  note: string;
+};
+
+export type CashRegister = {
+  id: string;
+  shop_id: string;
+  date: string;
+  opening: number;
+  expenses: number;
+  closing: number;
+  notes: string;
+};
+
+export type StockAdjustment = {
+  id: string;
+  shop_id: string;
+  date: string;
+  product_id: string | null;
+  product_name: string;
+  qty_change: number;
+  reason: string;
+  note: string;
+};

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { saveProduct, deleteProduct } from "@/actions/products";
+import { saveStockAdjustment } from "@/actions/stockAdjustments";
 import { money } from "@/lib/gst";
 import { useHotkey, kbdHint } from "@/lib/hotkey";
 import type { Product } from "@/lib/types";
@@ -9,6 +10,8 @@ const empty = { id: "", name: "", hsn: "", unit: "pcs", price: "", gst: "18", st
 
 export default function ProductsClient({ products }: { products: Product[] }) {
   const [open, setOpen] = useState(false);
+  const [adjOpen, setAdjOpen] = useState(false);
+  const [adjProduct, setAdjProduct] = useState<Product | null>(null);
   const [form, setForm] = useState<Record<string, string>>(empty);
   const [q, setQ] = useState("");
 
@@ -17,7 +20,8 @@ export default function ProductsClient({ products }: { products: Product[] }) {
     setOpen(true);
   }
   function add() { setForm(empty); setOpen(true); }
-  useHotkey("a", add, !open);
+  function adjust(p: Product) { setAdjProduct(p); setAdjOpen(true); }
+  useHotkey("a", add, !open && !adjOpen);
 
   const filtered = products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || p.hsn.includes(q));
 
@@ -46,6 +50,7 @@ export default function ProductsClient({ products }: { products: Product[] }) {
                 <td className="r" style={{ color: p.stock <= p.low ? "var(--red)" : "var(--green)", fontWeight: 700 }}>{p.stock}</td>
                 <td className="r">
                   <button className="btn btn-sm" onClick={() => edit(p)}>Edit</button>{" "}
+                  <button className="btn btn-sm btn-ghost" onClick={() => adjust(p)}>Adjust</button>{" "}
                   <form action={deleteProduct} style={{ display: "inline" }}>
                     <input type="hidden" name="id" value={p.id} />
                     <button className="btn btn-sm btn-red" type="submit">Del</button>
@@ -81,6 +86,44 @@ export default function ProductsClient({ products }: { products: Product[] }) {
               <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "flex-end" }}>
                 <button type="button" className="btn" onClick={() => setOpen(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {adjOpen && adjProduct && (
+        <div onClick={() => setAdjOpen(false)} className="modal-bg">
+          <div onClick={(e) => e.stopPropagation()} className="card modal-box">
+            <h3 style={{ fontWeight: 800, marginBottom: 6, fontSize: 17 }}>Adjust Stock</h3>
+            <p style={{ fontSize: 13.5, color: "var(--mut)", marginBottom: 16 }}>
+              <b style={{ color: "var(--txt)" }}>{adjProduct.name}</b> — Current stock: <b>{adjProduct.stock}</b>
+            </p>
+            <form action={async (fd) => { await saveStockAdjustment(fd); setAdjOpen(false); }}>
+              <input type="hidden" name="product_id" value={adjProduct.id} />
+              <div className="row-2" style={{ marginBottom: 14 }}>
+                <div>
+                  <label className="fld">Qty Change (+ / −)</label>
+                  <input className="inp" name="qty_change" type="number" step="any" autoFocus placeholder="+10 or −5" required />
+                </div>
+                <div>
+                  <label className="fld">Reason</label>
+                  <select className="inp" name="reason" defaultValue="other">
+                    <option value="damage">Damage</option>
+                    <option value="theft">Theft</option>
+                    <option value="counting">Stock Counting</option>
+                    <option value="expiry">Expiry</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <label className="fld">Note</label>
+                <input className="inp" name="note" placeholder="Optional details…" />
+              </div>
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <button type="button" className="btn" onClick={() => setAdjOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Adjustment</button>
               </div>
             </form>
           </div>
