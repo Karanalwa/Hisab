@@ -18,12 +18,12 @@ export default async function RegisterPage({
 
   const [{ data: invData }, { data: regData }, { data: cnData }] = await Promise.all([
     supabase.from("invoices").select("*").eq("date", date),
-    supabase.from("cash_register").select("*").eq("date", date).single(),
+    supabase.from("cash_register").select("*").eq("date", date).limit(1),
     supabase.from("credit_notes").select("*").eq("date", date),
   ]);
 
   const invoices = (invData || []) as Invoice[];
-  const reg = regData as CashRegister | null;
+  const reg = (regData && regData[0] ? regData[0] : null) as CashRegister | null;
   const creditNotes = (cnData || []) as CreditNote[];
 
   const byMode: Record<string, number> = {};
